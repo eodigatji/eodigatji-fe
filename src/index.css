@@ -1,1 +1,190 @@
 @import 'tailwindcss';
+
+:root {
+  --surface-base: #f4f7fb;
+  --surface-soft: #edf4fb;
+  --surface-card: #ffffff;
+  --text-strong: #132238;
+  --text-muted: #5f6f84;
+  --border-subtle: #dbe6f2;
+  --border-accent: #a8d7ff;
+  --accent-strong: #0f7ae5;
+  --accent-soft: #e7f2ff;
+  --found-strong: #0f8f63;
+  --found-soft: #e8f8f1;
+  --lost-strong: #b86a00;
+  --lost-soft: #fff1dc;
+  --danger-strong: #be3c3c;
+  --danger-soft: #fff0f0;
+  --danger-border: #f1c6c6;
+  --shadow-soft: 0 20px 48px -28px rgba(17, 35, 58, 0.22);
+  --shadow-accent: 0 14px 28px -18px rgba(15, 122, 229, 0.65);
+  --radius-panel: 24px;
+  --radius-card: 18px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--surface-base);
+}
+
+body {
+  margin: 0;
+  font-family:
+    Inter, Pretendard, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
+  color: var(--text-strong);
+  background:
+    radial-gradient(circle at top, rgba(15, 122, 229, 0.06), transparent 28%),
+    var(--surface-base);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.auth-layout-grid {
+  grid-template-columns: 1.1fr 0.9fr;
+}
+
+.main-layout-grid {
+  grid-template-columns: 240px minmax(0, 1fr);
+}
+
+.home-hero-grid {
+  grid-template-columns: minmax(0, 1fr) 280px;
+}
+
+.home-overview-grid {
+  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.8fr);
+}
+
+.profile-summary-grid {
+  grid-template-columns: minmax(0, 1fr) 280px;
+}
+
+.detail-sidebar-grid {
+  grid-template-columns: minmax(0, 1.3fr) 360px;
+}
+
+.form-sidebar-grid {
+  grid-template-columns: minmax(0, 1fr) 320px;
+}
+
+.location-filter-grid {
+  grid-template-columns: minmax(0, 1fr) 220px;
+}
+
+.location-dashboard-grid {
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+}
+
+.location-editor-grid {
+  grid-template-columns: minmax(0, 1.15fr) 360px;
+}
+
+.location-detail-hero-grid {
+  grid-template-columns: minmax(0, 1fr) 400px;
+}
+
+.location-coordinate-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.auth-code-grid {
+  grid-template-columns: minmax(0, 1fr) 128px;
+}
+
+.auth-showcase-surface {
+  background:
+    radial-gradient(circle at top left, rgba(14, 165, 233, 0.18), transparent 35%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(244, 249, 255, 0.98));
+}
+
+.home-hero-surface {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(14, 165, 233, 0.16),
+      rgba(255, 255, 255, 1) 42%,
+      rgba(14, 165, 233, 0.08)
+    );
+}
+
+.location-hero-surface {
+  background:
+    radial-gradient(circle at top left, rgba(15, 122, 229, 0.18), transparent 34%),
+    linear-gradient(135deg, rgba(240, 248, 255, 0.96), rgba(255, 255, 255, 1) 52%);
+}
+
+.location-map-frame {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(244, 250, 255, 0.94), rgba(227, 238, 250, 0.92));
+  min-height: 320px;
+}
+
+.location-map-canvas {
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+}
+
+.location-map-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.8);
+  text-align: center;
+}
+
+.eyebrow-tracking {
+  letter-spacing: 0.12em;
+}
+
+@media (max-width: 1080px) {
+  .auth-layout-grid,
+  .home-hero-grid,
+  .home-overview-grid,
+  .profile-summary-grid,
+  .detail-sidebar-grid,
+  .form-sidebar-grid,
+  .location-dashboard-grid,
+  .location-editor-grid,
+  .location-detail-hero-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .main-layout-grid,
+  .location-filter-grid,
+  .location-coordinate-grid,
+  .auth-code-grid {
+    grid-template-columns: 1fr;
+  }
+}
