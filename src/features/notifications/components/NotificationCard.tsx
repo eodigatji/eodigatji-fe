@@ -1,4 +1,4 @@
-import type { NotificationItem } from '../../../app/data/prototype'
+import type { NotificationItem } from '../types'
 
 type NotificationCardProps = {
   notification: NotificationItem
@@ -12,12 +12,12 @@ function NotificationCard({
   return (
     <article
       className={[
-        'rounded-(--radius-card) border p-4',
+        'rounded-[var(--radius-card)] border p-4',
         variant === 'full'
           ? notification.unread
-            ? 'border-(--border-accent) bg-(--accent-soft)/40'
-            : 'border-(--border-subtle) bg-(--surface-card)'
-          : 'border-(--border-subtle) bg-(--surface-card)',
+            ? 'border-[color:var(--border-accent)] bg-[color:var(--accent-soft)]/40'
+            : 'border-(--border-subtle) bg-[color:var(--surface-card)]'
+          : 'border-(--border-subtle) bg-[color:var(--surface-card)]',
       ].join(' ')}
     >
       <div className="flex items-center justify-between gap-3">

@@ -1,168 +1,157 @@
 import {
-  BadgeCheck,
-  Compass,
-  House,
-  LogIn,
+  BadgeHelp,
   MapPinned,
-  Plus,
   Search,
+  ShieldCheck,
+  UserRound,
 } from 'lucide-react'
-import { NavLink, Outlet } from 'react-router-dom'
-import { activitySummary, primaryNavigation } from '../data/prototype'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { useAuthStore } from '../../features/auth/store/authStore'
 
-const navigationIcons = {
-  '/': House,
-  '/auth/login': LogIn,
-  '/locations': MapPinned,
-  '/posts': Search,
-  '/api-status': BadgeCheck,
-} as const
+type NavigationItem = {
+  to: string
+  label: string
+  icon: typeof MapPinned
+}
+
+function isLocationDetailPath(pathname: string) {
+  return /^\/locations\/\d+$/.test(pathname)
+}
+
+function isLocationEditPath(pathname: string) {
+  return /^\/locations\/\d+\/edit$/.test(pathname)
+}
+
+function isPostDetailPath(pathname: string) {
+  return /^\/posts\/\d+$/.test(pathname)
+}
+
+function isNavigationItemActive(pathname: string, itemTo: string) {
+  if (itemTo === '/') {
+    return pathname === '/'
+  }
+
+  if (itemTo === '/locations') {
+    return (
+      pathname === '/locations' ||
+      isLocationDetailPath(pathname) ||
+      isLocationEditPath(pathname)
+    )
+  }
+
+  if (itemTo === '/posts') {
+    return (
+      pathname === '/posts' ||
+      pathname === '/posts/new' ||
+      isPostDetailPath(pathname)
+    )
+  }
+
+  if (itemTo === '/mypage') {
+    return pathname === '/mypage'
+  }
+
+  if (itemTo === '/auth/login') {
+    return pathname === '/auth/login'
+  }
+
+  if (itemTo === '/api-status') {
+    return pathname === '/api-status'
+  }
+
+  return pathname === itemTo
+}
 
 function MainLayout() {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const { pathname } = useLocation()
+
+  const primaryNavigation: NavigationItem[] = isAuthenticated
+    ? [
+        { to: '/', label: '홈', icon: MapPinned },
+        { to: '/locations', label: '장소', icon: MapPinned },
+        { to: '/posts', label: '찾기', icon: Search },
+        { to: '/mypage', label: '내정보', icon: UserRound },
+      ]
+    : [
+        { to: '/', label: '홈', icon: MapPinned },
+        { to: '/auth/login', label: '로그인', icon: ShieldCheck },
+        { to: '/locations', label: '장소', icon: MapPinned },
+        { to: '/posts', label: '찾기', icon: Search },
+        { to: '/api-status', label: '안내', icon: BadgeHelp },
+      ]
+
   return (
-    <div className="min-h-screen bg-(--surface-base) text-(--text-strong)">
-      <header className="sticky top-0 z-20 border-b border-(--border-subtle) bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
-          <NavLink
-            to="/"
-            className="flex items-center gap-3 rounded-full border border-(--border-subtle) bg-(--surface-card) px-3 py-2"
-          >
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-(--accent-strong) text-sm font-semibold text-white">
-              어
-            </span>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold">어디갔지</p>
-              <p className="text-xs text-(--text-muted)">
-                강남대 분실물 허브
-              </p>
-            </div>
-          </NavLink>
-
-          <div className="hidden min-w-0 flex-1 items-center gap-2 rounded-full border border-(--border-subtle) bg-(--surface-soft) px-4 py-2 md:flex">
-            <Search className="h-4 w-4 text-(--text-muted)" />
-            <input
-              className="w-full bg-transparent text-sm outline-none placeholder:text-(--text-muted)"
-              placeholder="물품명, 장소, 날짜로 찾기"
-            />
-          </div>
-
-          <nav className="ml-auto hidden items-center gap-1 lg:flex">
-            {primaryNavigation.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) =>
-                  [
-                    'rounded-full px-4 py-2 text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-(--accent-soft) text-(--accent-strong)'
-                      : 'text-(--text-muted) hover:bg-(--surface-soft) hover:text-(--text-strong)',
-                  ].join(' ')
-                }
-              >
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
-
-          <button
-            type="button"
-            className="hidden items-center gap-2 rounded-full bg-(--accent-strong) px-4 py-2 text-sm font-semibold text-white shadow-(--shadow-accent) md:inline-flex"
-          >
-            <Plus className="h-4 w-4" />
-            게시글 등록
-          </button>
-        </div>
-      </header>
-
-      <div className="main-layout-grid mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:px-8">
-        <aside className="hidden rounded-(--radius-panel) border border-(--border-subtle) bg-(--surface-card) p-4 shadow-(--shadow-soft) lg:block">
-          <div className="space-y-3">
-            <div>
-              <p className="text-sm font-semibold">{activitySummary.nickname}</p>
-              <p className="text-xs text-(--text-muted)">
-                학번 {activitySummary.studentNumber}
-              </p>
-            </div>
-            <div className="rounded-2xl bg-(--surface-soft) p-3">
-              <div className="flex items-center justify-between text-sm">
-                <span>활동 온도</span>
-                <span className="font-semibold text-(--accent-strong)">
-                  {activitySummary.temperature}°
-                </span>
+    <div className="mobile-frame-app min-h-screen bg-(color:--surface-base) text-(color:--text-strong)">
+      <div className="mobile-frame-shell mx-auto min-h-screen">
+        <header className="sticky top-0 z-30 border-b border-white/70 bg-white/92 backdrop-blur-xl">
+          <div className="mobile-topbar flex items-center gap-2 px-3 py-3">
+            <NavLink
+              to="/"
+              className="mobile-brand-chip flex min-w-0 flex-1 items-center gap-2 rounded-full border border-(color:--border-subtle) bg-white px-2.5 py-2 shadow-[0_18px_34px_-28px_rgba(19,34,56,0.65)]"
+            >
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-(color:--accent-strong) text-sm font-semibold text-white">
+                M
+              </span>
+              <div className="min-w-0">
+                <p className="text-[15px] font-semibold">메인 지도</p>
+                <p className="text-[11px] leading-4 text-(color:--text-muted)">
+                  보관 장소와 물품 현황을 먼저 확인하는 홈
+                </p>
               </div>
-              <div className="mt-2 h-2 rounded-full bg-white">
-                <div
-                  className="h-2 rounded-full bg-(--accent-strong)"
-                  style={{ width: `${activitySummary.temperature}%` }}
-                />
-              </div>
-            </div>
-            <div className="grid gap-2">
-              {[
-                ['포인트', `${activitySummary.points}P`],
-                ['작성글', `${activitySummary.posts}`],
-                ['댓글', `${activitySummary.comments}`],
-              ].map(([label, value]) => (
-                <div
-                  key={label}
-                  className="flex items-center justify-between rounded-2xl border border-(--border-subtle) px-3 py-2 text-sm"
-                >
-                  <span className="text-(--text-muted)">{label}</span>
-                  <span className="font-semibold">{value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+            </NavLink>
 
-          <div className="mt-6 space-y-2">
-            <p className="eyebrow-tracking text-(--text-muted) text-xs font-semibold uppercase">
-              빠른 이동
-            </p>
-            {[
-              ['회원가입 플로우 검토', '/auth/signup/email'],
-              ['보관 장소 CRUD 검토', '/locations'],
-              ['현재 API 범위 확인', '/api-status'],
-            ].map(([label, to]) => (
-              <NavLink
-                key={to}
-                to={to}
-                className="flex items-center gap-2 rounded-2xl px-3 py-2 text-(--text-muted) text-sm transition hover:bg-(--surface-soft) hover:text-(--text-strong)"
-              >
-                <Compass className="h-4 w-4" />
-                {label}
-              </NavLink>
-            ))}
-          </div>
-        </aside>
+            <NavLink
+              to="/posts"
+              className="mobile-search-action app-command-bar grid h-11 w-11 shrink-0 place-items-center rounded-[24px] border border-(color:--border-subtle) bg-(color:--surface-soft)"
+            >
+              <Search className="h-5 w-5 text-(color:--text-muted)" />
+            </NavLink>
 
-        <main className="min-w-0 pb-20 lg:pb-0">
+            <NavLink
+              to={isAuthenticated ? '/locations/new' : '/auth/login'}
+              className="mobile-topbar-button hidden shrink-0 items-center justify-center rounded-full bg-(color:--accent-strong) px-3 py-2 text-center text-[13px] font-semibold text-[color:#fff] shadow-(--shadow-accent) sm:inline-flex"
+            >
+              {isAuthenticated ? '장소 등록' : '로그인'}
+            </NavLink>
+          </div>
+        </header>
+
+        <main className="min-w-0 px-3 py-4 pb-24">
           <Outlet />
         </main>
-      </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-(--border-subtle) bg-white/90 backdrop-blur lg:hidden">
-        <div className="mx-auto grid max-w-xl grid-cols-5 px-2 py-2">
-          {primaryNavigation.map((item) => {
-            const Icon = navigationIcons[item.to]
-            return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) =>
-                  [
-                    'flex flex-col items-center gap-1 rounded-2xl px-2 py-2 text-xs font-medium',
-                    isActive ? 'text-(--accent-strong)' : 'text-(--text-muted)',
-                  ].join(' ')
-                }
-              >
-                <Icon className="h-4 w-4" />
-                <span>{item.label}</span>
-              </NavLink>
-            )
-          })}
-        </div>
-      </nav>
+        <nav className="mobile-frame-bottom-nav fixed bottom-0 z-30 border-t border-(color:--border-subtle) bg-white/92 backdrop-blur">
+          <div
+            className={`grid gap-1 px-1.5 py-1.5 ${
+              isAuthenticated ? 'grid-cols-4' : 'grid-cols-5'
+            }`}
+          >
+            {primaryNavigation.map((item) => {
+              const Icon = item.icon
+              const isActive = isNavigationItemActive(pathname, item.to)
+
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={() =>
+                    [
+                      'mobile-nav-item flex flex-col items-center gap-0.5 rounded-xl px-1.5 py-2 text-[10px] font-medium',
+                      isActive
+                        ? 'bg-(color:--accent-soft) text-(color:--accent-strong)'
+                        : 'text-(color:--text-muted)',
+                    ].join(' ')
+                  }
+                >
+                  <Icon className="h-[17px] w-[17px]" />
+                  <span>{item.label}</span>
+                </NavLink>
+              )
+            })}
+          </div>
+        </nav>
+      </div>
     </div>
   )
 }

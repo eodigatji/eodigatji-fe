@@ -9,8 +9,8 @@ export type CoordinateSource = {
 }
 
 export const DEFAULT_MAP_CENTER: Coordinates = {
-  latitude: 37.5665,
-  longitude: 126.978,
+  latitude: 37.2757,
+  longitude: 127.1325,
 }
 
 export function hasLocationCoordinates(

@@ -9,7 +9,7 @@ function SectionPanel({ children, className = '' }: SectionPanelProps) {
   return (
     <section
       className={[
-        'rounded-(--radius-panel) border border-(--border-subtle) bg-(--surface-card) p-5 shadow-(--shadow-soft)',
+        'rounded-[var(--radius-panel)] border border-(--border-subtle) bg-[color:var(--surface-card)] p-4 shadow-[var(--shadow-soft)]',
         className,
       ].join(' ')}
     >

@@ -9,6 +9,7 @@ export type NaverLocationMarker = Coordinates & {
   id: number
   name: string
   detail?: string
+  itemCount?: number
   number?: string
 }
 
@@ -22,6 +23,49 @@ type NaverLocationMapProps = {
   emptyMessage?: string
 }
 
+function escapeMarkerText(value: string) {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
+}
+
+function createMarkerHtml(marker: NaverLocationMarker, isActive: boolean) {
+  const count = marker.itemCount ?? 0
+  const label = escapeMarkerText(marker.name)
+
+  return `
+    <div class="location-map-marker${isActive ? ' is-active' : ''}" aria-label="${label}">
+      <span class="location-map-marker-count">${count}</span>
+    </div>
+  `
+}
+
+function getEventLatLng(event: any, map: any) {
+  const directCoordinate = event?.coord ?? event?.latlng ?? event?.latLng
+
+  if (
+    directCoordinate &&
+    typeof directCoordinate.lat === 'function' &&
+    typeof directCoordinate.lng === 'function'
+  ) {
+    return directCoordinate
+  }
+
+  if (
+    directCoordinate &&
+    typeof directCoordinate.x === 'number' &&
+    typeof directCoordinate.y === 'number' &&
+    typeof map?.coordToLatLng === 'function'
+  ) {
+    return map.coordToLatLng(directCoordinate)
+  }
+
+  return null
+}
+
 function NaverLocationMap({
   markers = [],
   selectedCoordinates = null,
@@ -29,7 +73,7 @@ function NaverLocationMap({
   onMarkerSelect,
   onSelectCoordinates,
   className = '',
-  emptyMessage = '지도 준비 중입니다.',
+  emptyMessage = '지도를 준비 중입니다.',
 }: NaverLocationMapProps) {
   const mapElementRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<any>(null)
@@ -76,24 +120,29 @@ function NaverLocationMap({
 
         if (!mapRef.current) {
           mapRef.current = new naver.maps.Map(mapElementRef.current, {
-            center: new naver.maps.LatLng(initialCenter.latitude, initialCenter.longitude),
+            center: new naver.maps.LatLng(
+              initialCenter.latitude,
+              initialCenter.longitude,
+            ),
             zoom: 16,
           })
 
-          naver.maps.Event.addListener(mapRef.current, 'click', (event: any) => {
-            if (!onSelectCoordinatesRef.current) return
+          naver.maps.Event.addListener(
+            mapRef.current,
+            'click',
+            (event: any) => {
+              if (!onSelectCoordinatesRef.current) return
 
-            const latLng = event.coord
-              ? mapRef.current.coordToLatLng(event.coord)
-              : event.latlng
+              const latLng = getEventLatLng(event, mapRef.current)
 
-            if (!latLng) return
+              if (!latLng) return
 
-            onSelectCoordinatesRef.current({
-              latitude: Number(latLng.lat().toFixed(6)),
-              longitude: Number(latLng.lng().toFixed(6)),
-            })
-          })
+              onSelectCoordinatesRef.current({
+                latitude: Number(latLng.lat().toFixed(6)),
+                longitude: Number(latLng.lng().toFixed(6)),
+              })
+            },
+          )
         }
 
         setStatus('ready')
@@ -134,14 +183,26 @@ function NaverLocationMap({
 
     for (const markerData of markers) {
       const marker = new naver.maps.Marker({
-        position: new naver.maps.LatLng(markerData.latitude, markerData.longitude),
+        icon: {
+          content: createMarkerHtml(
+            markerData,
+            markerData.id === activeMarkerId,
+          ),
+          anchor: new naver.maps.Point(20, 20),
+        },
+        position: new naver.maps.LatLng(
+          markerData.latitude,
+          markerData.longitude,
+        ),
         map,
         title: markerData.name,
         zIndex: markerData.id === activeMarkerId ? 10 : 1,
       })
 
       markerInstancesRef.current.push(marker)
-      bounds.extend(new naver.maps.LatLng(markerData.latitude, markerData.longitude))
+      bounds.extend(
+        new naver.maps.LatLng(markerData.latitude, markerData.longitude),
+      )
 
       naver.maps.Event.addListener(marker, 'click', () => {
         onMarkerSelectRef.current?.(markerData)
@@ -163,6 +224,14 @@ function NaverLocationMap({
       selectedCoordinates.longitude,
     )
 
+    if (activeMarkerId !== null) {
+      if (selectionMarkerRef.current) {
+        selectionMarkerRef.current.setMap(null)
+      }
+      map.panTo(position)
+      return
+    }
+
     if (!selectionMarkerRef.current) {
       selectionMarkerRef.current = new naver.maps.Marker({ position })
     }
@@ -170,7 +239,7 @@ function NaverLocationMap({
     selectionMarkerRef.current.setPosition(position)
     selectionMarkerRef.current.setMap(map)
     map.panTo(position)
-  }, [selectedCoordinates])
+  }, [activeMarkerId, selectedCoordinates])
 
   useEffect(() => {
     if (!selectionMarkerRef.current || selectedCoordinates) return
@@ -183,7 +252,7 @@ function NaverLocationMap({
 
       {status !== 'ready' ? (
         <div className="location-map-overlay">
-          <p className="text-sm font-medium text-(--text-strong)">
+          <p className="text-sm font-medium text-(color:--text-strong)">
             {status === 'error' ? errorMessage : emptyMessage}
           </p>
         </div>

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import type { PostSummary } from '../../../app/data/prototype'
+import type { PostSummary } from '../types'
 import StatusBadge from '../../../shared/components/ui/StatusBadge'
 
 type PostCardProps = {
@@ -11,8 +11,8 @@ type PostCardProps = {
 function PostCard({ post, to, variant = 'full' }: PostCardProps) {
   const articleClassName =
     variant === 'compact'
-      ? 'rounded-(--radius-card) border border-(--border-subtle) bg-(--surface-soft) p-4'
-      : 'rounded-(--radius-panel) border border-(--border-subtle) bg-(--surface-card) p-5 shadow-(--shadow-soft) transition hover:-translate-y-0.5'
+      ? 'rounded-[var(--radius-card)] border border-(--border-subtle) bg-(--surface-soft) p-4'
+      : 'rounded-(--radius-panel) border border-(--border-subtle) bg-[color:var(--surface-card)] p-5 shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5'
 
   const content = (
     <article className={articleClassName}>
@@ -38,7 +38,11 @@ function PostCard({ post, to, variant = 'full' }: PostCardProps) {
       >
         <div className="min-w-0">
           <h3
-            className={variant === 'compact' ? 'text-base font-semibold' : 'text-lg font-semibold'}
+            className={
+              variant === 'compact'
+                ? 'text-base font-semibold'
+                : 'text-lg font-semibold'
+            }
           >
             {post.title}
           </h3>
@@ -54,7 +58,7 @@ function PostCard({ post, to, variant = 'full' }: PostCardProps) {
 
         <div
           className={[
-            'grid rounded-(--radius-card) text-(--text-muted)',
+            'grid rounded-[var(--radius-card)] text-(--text-muted)',
             variant === 'compact'
               ? 'min-w-32 gap-1 bg-white p-3 text-xs'
               : 'gap-2 bg-(--surface-soft) p-4 text-sm lg:min-w-56',

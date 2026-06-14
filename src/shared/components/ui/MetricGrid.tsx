@@ -17,9 +17,9 @@ function MetricGrid({
       {items.map((item) => (
         <div
           key={item.label}
-          className="rounded-(--radius-card) bg-(--surface-soft) p-4"
+          className="rounded-[var(--radius-card)] bg-(--surface-soft) p-4"
         >
-          <p className="eyebrow-tracking text-(--text-muted) text-xs font-semibold uppercase">
+          <p className="eyebrow-tracking text-xs font-semibold text-(--text-muted) uppercase">
             {item.label}
           </p>
           <p className="mt-2 text-sm font-medium">{item.value}</p>

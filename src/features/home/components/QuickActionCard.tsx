@@ -8,13 +8,18 @@ type QuickActionCardProps = {
   to: string
 }
 
-function QuickActionCard({ body, icon: Icon, title, to }: QuickActionCardProps) {
+function QuickActionCard({
+  body,
+  icon: Icon,
+  title,
+  to,
+}: QuickActionCardProps) {
   return (
     <Link
       to={to}
-      className="rounded-(--radius-card) border border-(--border-subtle) bg-(--surface-card) p-5 shadow-(--shadow-soft) transition hover:-translate-y-0.5"
+      className="rounded-[var(--radius-card)] border border-(--border-subtle) bg-[color:var(--surface-card)] p-5 shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5"
     >
-      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-(--accent-soft) text-(--accent-strong)">
+      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[color:var(--accent-soft)] text-(--accent-strong)">
         <Icon className="h-5 w-5" />
       </div>
       <h3 className="mt-4 text-lg font-semibold">{title}</h3>

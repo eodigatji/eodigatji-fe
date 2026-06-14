@@ -26,10 +26,15 @@ function SignupEmailPage() {
 
     try {
       await sendVerificationEmail(email)
-      setMessage('인증 코드를 발송했습니다. 이메일을 확인해 주세요.')
+      setMessage(
+        '인증 코드를 보냈어요. 학교 이메일함에서 메일을 확인해 주세요.',
+      )
     } catch (error) {
       setErrorMessage(
-        getApiErrorMessage(error, '인증 코드 발송에 실패했습니다.'),
+        getApiErrorMessage(
+          error,
+          '인증 코드를 보내지 못했어요. 잠시 후 다시 시도해 주세요.',
+        ),
       )
     } finally {
       setSending(false)
@@ -45,10 +50,13 @@ function SignupEmailPage() {
       await verifyEmailCode(email, code)
       setVerifiedEmail(email)
       setIsVerified(true)
-      setMessage('이메일 인증이 완료되었습니다.')
+      setMessage('이메일 인증이 완료됐어요.')
     } catch (error) {
       setErrorMessage(
-        getApiErrorMessage(error, '인증 코드 확인에 실패했습니다.'),
+        getApiErrorMessage(
+          error,
+          '인증번호가 맞지 않아요. 다시 확인해 주세요.',
+        ),
       )
     } finally {
       setVerifying(false)
@@ -58,13 +66,13 @@ function SignupEmailPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <p className="text-(--accent-strong) text-sm font-semibold">
-          Step 1 / POST /v1/auth/email/send, verify
+        <p className="text-sm font-semibold text-(--accent-strong)">
+          회원가입 1단계
         </p>
         <h1 className="text-3xl font-semibold">학교 이메일 인증</h1>
-        <p className="text-(--text-muted) text-sm leading-6">
-          강남대학교 이메일만 허용되며, 인증이 완료되어야 회원가입 요청을 보낼
-          수 있습니다.
+        <p className="text-sm leading-6 text-(--text-muted)">
+          강남대학교 이메일을 먼저 확인하면 다음 단계에서 닉네임과 학번을 입력해
+          계정을 만들 수 있어요.
         </p>
       </div>
 
@@ -78,16 +86,16 @@ function SignupEmailPage() {
                 setEmail(event.target.value)
                 setIsVerified(false)
               }}
-              className="rounded-(--radius-card) border border-(--border-subtle) bg-(--surface-soft) px-4 py-3 text-sm outline-none"
+              className="rounded-[var(--radius-card)] border border-(--border-subtle) bg-(--surface-soft) px-4 py-3 text-sm outline-none"
               placeholder="user@kangnam.ac.kr"
             />
             <button
               type="button"
               disabled={sending || !email}
               onClick={handleSendEmail}
-              className="rounded-full bg-(--accent-strong) px-4 py-3 text-sm font-semibold text-white shadow-(--shadow-accent) disabled:opacity-60"
+              className="rounded-full bg-(--accent-strong) px-4 py-3 text-sm font-semibold text-white shadow-[var(--shadow-accent)] disabled:opacity-60"
             >
-              {sending ? '발송 중...' : '코드 발송'}
+              {sending ? '보내는 중...' : '인증코드 보내기'}
             </button>
           </div>
         </label>
@@ -98,8 +106,8 @@ function SignupEmailPage() {
             <input
               value={code}
               onChange={(event) => setCode(event.target.value)}
-              className="rounded-(--radius-card) border border-(--border-subtle) bg-(--surface-soft) px-4 py-3 text-sm outline-none"
-              placeholder="6자리 숫자"
+              className="rounded-[var(--radius-card)] border border-(--border-subtle) bg-(--surface-soft) px-4 py-3 text-sm outline-none"
+              placeholder="메일로 받은 6자리 코드"
             />
             <button
               type="button"
@@ -107,36 +115,36 @@ function SignupEmailPage() {
               onClick={handleVerifyEmail}
               className="rounded-full border border-(--border-subtle) bg-white px-4 py-3 text-sm font-semibold disabled:opacity-60"
             >
-              {verifying ? '확인 중...' : '인증 확인'}
+              {verifying ? '확인 중...' : '이메일 인증'}
             </button>
           </div>
         </label>
       </div>
 
       {message ? (
-        <p className="rounded-(--radius-card) border border-(--border-subtle) bg-(--surface-soft) px-4 py-3 text-sm">
+        <p className="rounded-[var(--radius-card)] border border-(--border-subtle) bg-(--surface-soft) px-4 py-3 text-sm">
           {message}
         </p>
       ) : null}
 
       {errorMessage ? (
-        <p className="rounded-(--radius-card) border border-(--danger-border) bg-(--danger-soft) px-4 py-3 text-(--danger-strong) text-sm">
+        <p className="rounded-[var(--radius-card)] border border-[color:var(--danger-border)] bg-[color:var(--danger-soft)] px-4 py-3 text-sm text-[color:var(--danger-strong)]">
           {errorMessage}
         </p>
       ) : null}
 
-      <div className="flex items-center justify-between rounded-(--radius-card) bg-(--surface-soft) p-4">
+      <div className="flex items-center justify-between rounded-[var(--radius-card)] bg-(--surface-soft) p-4">
         <div>
           <p className="text-sm font-semibold">다음 단계</p>
-          <p className="mt-1 text-(--text-muted) text-sm">
-            인증이 끝나면 비밀번호, 닉네임, 학번 입력으로 이동
+          <p className="mt-1 text-sm text-(--text-muted)">
+            이메일 인증이 끝나면 프로필 정보를 입력할 수 있어요.
           </p>
         </div>
         <button
           type="button"
           disabled={!isVerified}
           onClick={() => navigate('/auth/signup/profile')}
-          className="rounded-full bg-(--accent-strong) px-4 py-2 text-sm font-semibold text-white shadow-(--shadow-accent) disabled:opacity-50"
+          className="rounded-full bg-(--accent-strong) px-4 py-2 text-sm font-semibold text-white shadow-[var(--shadow-accent)] disabled:opacity-50"
         >
           다음
         </button>

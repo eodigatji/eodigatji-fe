@@ -19,22 +19,22 @@ type LocationCardProps = {
   variant?: 'compact' | 'full'
 }
 
-function LocationCard({
-  location,
-  to,
-  variant = 'full',
-}: LocationCardProps) {
+function LocationCard({ location, to, variant = 'full' }: LocationCardProps) {
   const articleClassName =
     variant === 'compact'
-      ? 'rounded-(--radius-card) border border-(--border-subtle) bg-(--surface-soft) p-4'
-      : 'rounded-(--radius-panel) border border-(--border-subtle) bg-(--surface-card) p-5 shadow-(--shadow-soft) transition hover:-translate-y-0.5'
+      ? 'rounded-[var(--radius-card)] border border-(--border-subtle) bg-(--surface-soft) p-4'
+      : 'rounded-(--radius-panel) border border-(--border-subtle) bg-[color:var(--surface-card)] p-5 shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5'
 
   const content = (
     <article className={articleClassName}>
       <div className="flex items-start justify-between gap-4">
         <div>
           <h3
-            className={variant === 'compact' ? 'text-sm font-semibold' : 'text-lg font-semibold'}
+            className={
+              variant === 'compact'
+                ? 'text-sm font-semibold'
+                : 'text-lg font-semibold'
+            }
           >
             {location.name}
           </h3>
@@ -55,7 +55,9 @@ function LocationCard({
       <div className="mt-4 flex items-center justify-between text-sm text-(--text-muted)">
         <span>{location.keeper ?? location.createdAt ?? '추가 정보 없음'}</span>
         {variant === 'full' ? (
-          <span>{hasLocationCoordinates(location) ? '지도 보기' : '좌표 미등록'}</span>
+          <span>
+            {hasLocationCoordinates(location) ? '지도 보기' : '좌표 미등록'}
+          </span>
         ) : null}
       </div>
 

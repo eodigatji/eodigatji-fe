@@ -1,5 +1,11 @@
-import { MapPin, Navigation, PencilLine } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
+import { PencilLine } from 'lucide-react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+} from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   createLocation,
@@ -44,17 +50,19 @@ function parseCoordinateField(
   const parsed = Number(value)
 
   if (!Number.isFinite(parsed)) {
-    throw new Error(`${label}는 숫자만 입력해 주세요.`)
+    throw new Error(`${label}에는 숫자를 입력해 주세요.`)
   }
 
   if (parsed < min || parsed > max) {
-    throw new Error(`${label}는 ${min}에서 ${max} 사이여야 합니다.`)
+    throw new Error(`${label}는 ${min}에서 ${max} 사이여야 해요.`)
   }
 
   return Number(parsed.toFixed(6))
 }
 
-function buildLocationPayload(values: LocationFormValues): LocationCreateRequest {
+function buildLocationPayload(
+  values: LocationFormValues,
+): LocationCreateRequest {
   const payload: LocationCreateRequest = {
     name: values.name.trim(),
     detail: values.detail.trim(),
@@ -62,14 +70,14 @@ function buildLocationPayload(values: LocationFormValues): LocationCreateRequest
   }
 
   if (!payload.name || !payload.detail || !payload.number) {
-    throw new Error('장소명, 상세 위치, 보관 번호는 모두 입력해 주세요.')
+    throw new Error('장소명, 상세 위치, 보관 번호를 모두 입력해 주세요.')
   }
 
   const latitude = values.latitude.trim()
   const longitude = values.longitude.trim()
 
   if ((latitude && !longitude) || (!latitude && longitude)) {
-    throw new Error('위도와 경도는 함께 입력해 주세요.')
+    throw new Error('위도와 경도를 함께 입력해 주세요.')
   }
 
   if (latitude && longitude) {
@@ -85,7 +93,8 @@ function LocationFormPage({ mode }: LocationFormPageProps) {
   const { locationId } = useParams()
   const isEdit = mode === 'edit'
   const [form, setForm] = useState<LocationFormValues>(EMPTY_FORM)
-  const [initialPayload, setInitialPayload] = useState<LocationCreateRequest | null>(null)
+  const [initialPayload, setInitialPayload] =
+    useState<LocationCreateRequest | null>(null)
   const [loading, setLoading] = useState(isEdit)
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
@@ -113,7 +122,7 @@ function LocationFormPage({ mode }: LocationFormPageProps) {
       setInitialPayload(buildLocationPayload(nextForm))
     } catch (error) {
       setErrorMessage(
-        getApiErrorMessage(error, '보관장소 정보를 불러오지 못했습니다.'),
+        getApiErrorMessage(error, '보관 장소 정보를 불러오지 못했어요.'),
       )
     } finally {
       setLoading(false)
@@ -188,17 +197,18 @@ function LocationFormPage({ mode }: LocationFormPageProps) {
 
       if (isEdit) {
         if (!locationId) {
-          throw new Error('수정할 보관장소 ID가 없습니다.')
+          throw new Error('수정할 장소 정보를 찾을 수 없어요.')
         }
 
         const patchPayload = Object.fromEntries(
           Object.entries(payload).filter(
-            ([key, value]) => value !== initialPayload?.[key as keyof LocationCreateRequest],
+            ([key, value]) =>
+              value !== initialPayload?.[key as keyof LocationCreateRequest],
           ),
         )
 
         if (!Object.keys(patchPayload).length) {
-          throw new Error('변경된 항목이 없습니다.')
+          throw new Error('바뀐 내용이 없어요.')
         }
 
         const updated = await updateLocation(Number(locationId), patchPayload)
@@ -208,7 +218,9 @@ function LocationFormPage({ mode }: LocationFormPageProps) {
         navigate(`/locations/${created.id}`)
       }
     } catch (error) {
-      setErrorMessage(getApiErrorMessage(error, '보관장소 저장에 실패했습니다.'))
+      setErrorMessage(
+        getApiErrorMessage(error, '보관 장소를 저장하지 못했어요.'),
+      )
     } finally {
       setSubmitting(false)
     }
@@ -217,8 +229,10 @@ function LocationFormPage({ mode }: LocationFormPageProps) {
   if (loading) {
     return (
       <div className="location-editor-grid grid gap-6">
-        <section className="rounded-(--radius-panel) border border-(--border-subtle) bg-(--surface-card) p-6 shadow-(--shadow-soft)">
-          <p className="text-sm text-(--text-muted)">보관장소 정보를 불러오는 중입니다...</p>
+        <section className="rounded-(--radius-panel) border border-(--border-subtle) bg-[color:var(--surface-card)] p-6 shadow-[var(--shadow-soft)]">
+          <p className="text-sm text-(--text-muted)">
+            보관 장소 정보를 불러오는 중이에요...
+          </p>
         </section>
       </div>
     )
@@ -226,25 +240,29 @@ function LocationFormPage({ mode }: LocationFormPageProps) {
 
   return (
     <form className="location-editor-grid grid gap-6" onSubmit={handleSubmit}>
-      <section className="overflow-hidden rounded-(--radius-panel) border border-(--border-subtle) bg-(--surface-card) shadow-(--shadow-soft)">
+      <section className="overflow-hidden rounded-(--radius-panel) border border-(--border-subtle) bg-[color:var(--surface-card)] shadow-[var(--shadow-soft)]">
         <div className="location-hero-surface p-6">
-          <p className="text-sm font-semibold text-(--accent-strong)">
-            {isEdit ? 'PATCH /v1/locations/{id}' : 'POST /v1/locations'}
-          </p>
-          <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
+          <div className="mt-1 flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-semibold">
-                {isEdit ? '보관장소 수정' : '보관장소 등록'}
+              <p className="text-sm font-semibold text-(--accent-strong)">
+                {isEdit ? '장소 정보 수정' : '새 보관 장소 등록'}
+              </p>
+              <h1 className="mt-3 text-3xl font-semibold">
+                {isEdit
+                  ? '보관 장소를 최신 정보로 바꿔 주세요.'
+                  : '지도에 새 보관 장소를 추가해 주세요.'}
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-(--text-muted)">
-                위도와 경도는 직접 입력해도 되고, 아래 지도에서 위치를 클릭해서
-                자동으로 채울 수도 있습니다. 좌표가 있으면 상세 페이지와 목록에서
-                바로 지도 기반으로 보여줄 수 있습니다.
+                위도와 경도는 직접 입력할 수도 있고, 아래 지도에서 위치를 눌러
+                자동으로 채울 수도 있어요. 좌표를 입력해 두면 목록과 상세
+                화면에서 위치를 더 쉽게 확인할 수 있습니다.
               </p>
             </div>
-            <div className="rounded-(--radius-card) border border-white/80 bg-white/90 px-4 py-3 text-sm text-(--text-muted)">
-              <p className="font-semibold text-(--text-strong)">입력 방법</p>
-              <p className="mt-1">지도 클릭 또는 위도/경도 직접 입력</p>
+            <div className="rounded-[var(--radius-card)] border border-white/80 bg-white/90 px-4 py-3 text-sm text-(--text-muted)">
+              <p className="font-semibold text-[color:var(--text-strong)]">
+                입력 방법
+              </p>
+              <p className="mt-1">지도를 클릭하거나 위도, 경도를 직접 입력</p>
             </div>
           </div>
         </div>
@@ -254,7 +272,7 @@ function LocationFormPage({ mode }: LocationFormPageProps) {
             className="min-h-[420px]"
             selectedCoordinates={previewCoordinates}
             onSelectCoordinates={applyCoordinates}
-            emptyMessage="네이버 지도를 불러오는 중입니다."
+            emptyMessage="네이버 지도를 불러오는 중이에요."
           />
 
           <div className="location-coordinate-grid grid gap-3">
@@ -262,8 +280,10 @@ function LocationFormPage({ mode }: LocationFormPageProps) {
               <span className="text-sm font-medium">위도 (latitude)</span>
               <input
                 value={form.latitude}
-                onChange={(event) => updateField('latitude', event.target.value)}
-                className="rounded-(--radius-card) border border-(--border-subtle) bg-(--surface-soft) px-4 py-3 text-sm outline-none"
+                onChange={(event) =>
+                  updateField('latitude', event.target.value)
+                }
+                className="rounded-[var(--radius-card)] border border-(--border-subtle) bg-(--surface-soft) px-4 py-3 text-sm outline-none"
                 placeholder="예: 37.275280"
               />
             </label>
@@ -271,8 +291,10 @@ function LocationFormPage({ mode }: LocationFormPageProps) {
               <span className="text-sm font-medium">경도 (longitude)</span>
               <input
                 value={form.longitude}
-                onChange={(event) => updateField('longitude', event.target.value)}
-                className="rounded-(--radius-card) border border-(--border-subtle) bg-(--surface-soft) px-4 py-3 text-sm outline-none"
+                onChange={(event) =>
+                  updateField('longitude', event.target.value)
+                }
+                className="rounded-[var(--radius-card)] border border-(--border-subtle) bg-(--surface-soft) px-4 py-3 text-sm outline-none"
                 placeholder="예: 127.132431"
               />
             </label>
@@ -287,17 +309,17 @@ function LocationFormPage({ mode }: LocationFormPageProps) {
               좌표 지우기
             </button>
             <div className="rounded-full bg-(--surface-soft) px-4 py-2 text-sm text-(--text-muted)">
-              지도를 클릭하면 위도/경도가 자동 입력됩니다.
+              지도를 누르면 위도와 경도가 자동으로 입력돼요.
             </div>
           </div>
         </div>
       </section>
 
       <aside className="space-y-6">
-        <section className="rounded-(--radius-panel) border border-(--border-subtle) bg-(--surface-card) p-5 shadow-(--shadow-soft)">
+        <section className="rounded-(--radius-panel) border border-(--border-subtle) bg-[color:var(--surface-card)] p-5 shadow-[var(--shadow-soft)]">
           <div className="flex items-center gap-2">
             <PencilLine className="h-4 w-4 text-(--accent-strong)" />
-            <h2 className="text-xl font-semibold">보관장소 정보</h2>
+            <h2 className="text-xl font-semibold">보관 장소 정보</h2>
           </div>
 
           <div className="mt-5 grid gap-4">
@@ -306,8 +328,8 @@ function LocationFormPage({ mode }: LocationFormPageProps) {
               <input
                 value={form.name}
                 onChange={(event) => updateField('name', event.target.value)}
-                className="rounded-(--radius-card) border border-(--border-subtle) bg-(--surface-soft) px-4 py-3 text-sm outline-none"
-                placeholder="예: 학생지원팀 보관함 A"
+                className="rounded-[var(--radius-card)] border border-(--border-subtle) bg-(--surface-soft) px-4 py-3 text-sm outline-none"
+                placeholder="예: 학생지원관 보관함 A"
               />
             </label>
 
@@ -316,8 +338,8 @@ function LocationFormPage({ mode }: LocationFormPageProps) {
               <input
                 value={form.detail}
                 onChange={(event) => updateField('detail', event.target.value)}
-                className="rounded-(--radius-card) border border-(--border-subtle) bg-(--surface-soft) px-4 py-3 text-sm outline-none"
-                placeholder="예: 학생회관 1층 학생지원팀 앞"
+                className="rounded-[var(--radius-card)] border border-(--border-subtle) bg-(--surface-soft) px-4 py-3 text-sm outline-none"
+                placeholder="예: 학생회관 1층 안내 데스크 옆"
               />
             </label>
 
@@ -326,14 +348,14 @@ function LocationFormPage({ mode }: LocationFormPageProps) {
               <input
                 value={form.number}
                 onChange={(event) => updateField('number', event.target.value)}
-                className="rounded-(--radius-card) border border-(--border-subtle) bg-(--surface-soft) px-4 py-3 text-sm outline-none"
+                className="rounded-[var(--radius-card)] border border-(--border-subtle) bg-(--surface-soft) px-4 py-3 text-sm outline-none"
                 placeholder="예: A-01"
               />
             </label>
           </div>
 
           {errorMessage ? (
-            <p className="mt-4 rounded-(--radius-card) border border-(--danger-border) bg-(--danger-soft) px-4 py-3 text-sm text-(--danger-strong)">
+            <p className="mt-4 rounded-[var(--radius-card)] border border-[color:var(--danger-border)] bg-[color:var(--danger-soft)] px-4 py-3 text-sm text-[color:var(--danger-strong)]">
               {errorMessage}
             </p>
           ) : null}
@@ -342,45 +364,27 @@ function LocationFormPage({ mode }: LocationFormPageProps) {
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-full bg-(--accent-strong) px-4 py-3 text-sm font-semibold text-white shadow-(--shadow-accent) disabled:opacity-60"
+              className="rounded-full bg-(--accent-strong) px-4 py-3 text-sm font-semibold text-white shadow-[var(--shadow-accent)] disabled:opacity-60"
             >
-              {submitting ? '저장 중...' : isEdit ? '변경 저장' : '장소 등록'}
+              {submitting
+                ? '저장 중...'
+                : isEdit
+                  ? '변경사항 저장'
+                  : '장소 등록'}
             </button>
             <button
               type="button"
               onClick={() =>
-                navigate(isEdit && locationId ? `/locations/${locationId}` : '/locations')
+                navigate(
+                  isEdit && locationId
+                    ? `/locations/${locationId}`
+                    : '/locations',
+                )
               }
               className="rounded-full border border-(--border-subtle) bg-white px-4 py-3 text-sm font-semibold"
             >
               취소
             </button>
-          </div>
-        </section>
-
-        <section className="rounded-(--radius-panel) border border-(--border-subtle) bg-(--surface-card) p-5 shadow-(--shadow-soft)">
-          <div className="flex items-center gap-2">
-            <Navigation className="h-4 w-4 text-(--accent-strong)" />
-            <h2 className="text-xl font-semibold">좌표 입력 가이드</h2>
-          </div>
-          <ul className="mt-4 space-y-3 text-sm leading-6 text-(--text-muted)">
-            <li>위도는 `-90`부터 `90`, 경도는 `-180`부터 `180` 사이 값만 허용됩니다.</li>
-            <li>위도와 경도는 함께 입력해야 합니다. 한쪽만 입력하면 저장되지 않습니다.</li>
-            <li>수정 화면에서는 실제로 바뀐 필드만 PATCH body로 전송합니다.</li>
-            <li>지도 클릭으로 입력한 좌표는 소수점 6자리로 정리해서 저장합니다.</li>
-          </ul>
-
-          <div className="mt-4 rounded-(--radius-card) bg-(--surface-soft) p-4 text-sm text-(--text-muted)">
-            <div className="flex items-center gap-2 text-(--text-strong)">
-              <MapPin className="h-4 w-4 text-(--accent-strong)" />
-              <span>현재 좌표 미리보기</span>
-            </div>
-            <p className="mt-2">
-              위도: {previewCoordinates ? previewCoordinates.latitude.toFixed(6) : '미입력'}
-            </p>
-            <p className="mt-1">
-              경도: {previewCoordinates ? previewCoordinates.longitude.toFixed(6) : '미입력'}
-            </p>
           </div>
         </section>
       </aside>

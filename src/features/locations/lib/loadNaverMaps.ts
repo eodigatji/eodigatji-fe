@@ -2,16 +2,55 @@ declare global {
   interface Window {
     naver?: any
     navermap_authFailure?: () => void
+    __naverMapAuthState?: {
+      status: 'idle' | 'failed'
+      error: string | null
+    }
   }
 }
 
 let naverMapsPromise: Promise<any> | null = null
 
-export async function loadNaverMaps() {
-  const clientId = import.meta.env.VITE_NAVER_MAP_CLIENT_ID?.trim()
+function getExpectedOrigins() {
+  const { origin } = window.location
 
-  if (!clientId) {
-    throw new Error('VITE_NAVER_MAP_CLIENT_ID가 설정되지 않았습니다.')
+  return origin.startsWith('http://localhost:')
+    ? [origin, origin.replace('http://localhost:', 'http://127.0.0.1:')]
+    : [origin]
+}
+
+function createAuthErrorMessage(clientId: string) {
+  const expectedOrigins = getExpectedOrigins()
+
+  return [
+    '네이버 지도 인증에 실패했습니다.',
+    `Client ID: ${clientId}`,
+    `현재 접속 주소: ${window.location.origin}/`,
+    `NCP 콘솔의 Web 서비스 URL에 ${expectedOrigins.join(', ')} 와 각 주소의 / 버전까지 등록되어 있는지 확인해주세요.`,
+  ].join(' ')
+}
+
+function getScriptLoadErrorMessage() {
+  return '네이버 지도 SDK 스크립트를 불러오지 못했습니다. 네트워크 상태와 Client ID 설정을 확인해주세요.'
+}
+
+export async function loadNaverMaps() {
+  const keyId =
+    import.meta.env.VITE_NAVER_MAP_KEY_ID?.trim() ??
+    import.meta.env.VITE_NAVER_MAP_CLIENT_ID?.trim()
+
+  if (!keyId) {
+    throw new Error(
+      'VITE_NAVER_MAP_KEY_ID가 설정되지 않았습니다. 이전 이름인 VITE_NAVER_MAP_CLIENT_ID도 fallback으로 지원합니다.',
+    )
+  }
+
+  window.__naverMapAuthState ??= { status: 'idle', error: null }
+
+  if (window.__naverMapAuthState.status === 'failed') {
+    throw new Error(
+      window.__naverMapAuthState.error ?? createAuthErrorMessage(keyId),
+    )
   }
 
   if (window.naver?.maps) {
@@ -33,19 +72,38 @@ export async function loadNaverMaps() {
     }
 
     const handleAuthFailure = () => {
+      const errorMessage = createAuthErrorMessage(keyId)
+      window.__naverMapAuthState = {
+        status: 'failed',
+        error: errorMessage,
+      }
       cleanupAuthFailure()
-      reject(new Error('네이버 지도 인증에 실패했습니다. 도메인과 Key ID를 확인해 주세요.'))
+      reject(new Error(errorMessage))
     }
 
     const handleLoad = () => {
       cleanupAuthFailure()
 
+      if (window.__naverMapAuthState?.status === 'failed') {
+        reject(
+          new Error(
+            window.__naverMapAuthState.error ?? createAuthErrorMessage(keyId),
+          ),
+        )
+        return
+      }
+
       if (!window.naver?.maps) {
-        reject(new Error('네이버 지도 SDK를 불러오지 못했습니다.'))
+        reject(new Error(getScriptLoadErrorMessage()))
         return
       }
 
       resolve(window.naver)
+    }
+
+    const handleScriptError = () => {
+      cleanupAuthFailure()
+      reject(new Error(getScriptLoadErrorMessage()))
     }
 
     window.navermap_authFailure = handleAuthFailure
@@ -55,14 +113,9 @@ export async function loadNaverMaps() {
         handleLoad()
       } else {
         existingScript.addEventListener('load', handleLoad, { once: true })
-        existingScript.addEventListener(
-          'error',
-          () => {
-            cleanupAuthFailure()
-            reject(new Error('네이버 지도 SDK 스크립트 로딩에 실패했습니다.'))
-          },
-          { once: true },
-        )
+        existingScript.addEventListener('error', handleScriptError, {
+          once: true,
+        })
       }
 
       return
@@ -71,17 +124,9 @@ export async function loadNaverMaps() {
     const script = document.createElement('script')
     script.id = scriptId
     script.async = true
-    script.src =
-      `https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${clientId}`
+    script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${keyId}`
     script.addEventListener('load', handleLoad, { once: true })
-    script.addEventListener(
-      'error',
-      () => {
-        cleanupAuthFailure()
-        reject(new Error('네이버 지도 SDK 스크립트 로딩에 실패했습니다.'))
-      },
-      { once: true },
-    )
+    script.addEventListener('error', handleScriptError, { once: true })
     document.head.appendChild(script)
   }).catch((error) => {
     naverMapsPromise = null

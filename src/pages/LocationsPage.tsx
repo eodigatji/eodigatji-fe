@@ -1,4 +1,4 @@
-import { Compass, MapPinned, RefreshCw } from 'lucide-react'
+import { ChevronDown, MapPinned, Plus, RefreshCw, Search } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
@@ -18,7 +18,9 @@ function LocationsPage() {
   const [locations, setLocations] = useState<LocationDto[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [sortKey, setSortKey] = useState<'latest' | 'number' | 'name'>('latest')
-  const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null)
+  const [selectedLocationId, setSelectedLocationId] = useState<number | null>(
+    null,
+  )
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
 
@@ -30,7 +32,9 @@ function LocationsPage() {
       const data = await getLocations()
       setLocations(data)
     } catch (error) {
-      setErrorMessage(getApiErrorMessage(error, '보관장소 목록을 불러오지 못했습니다.'))
+      setErrorMessage(
+        getApiErrorMessage(error, '보관 장소 목록을 불러오지 못했어요.'),
+      )
     } finally {
       setLoading(false)
     }
@@ -54,28 +58,19 @@ function LocationsPage() {
     )
 
     next.sort((a, b) => {
-      if (sortKey === 'name') return a.name.localeCompare(b.name, 'ko')
-      if (sortKey === 'number') return a.number.localeCompare(b.number, 'ko')
+      if (sortKey === 'name') {
+        return a.name.localeCompare(b.name, 'ko')
+      }
+
+      if (sortKey === 'number') {
+        return a.number.localeCompare(b.number, 'ko')
+      }
+
       return b.id - a.id
     })
 
     return next
   }, [locations, searchTerm, sortKey])
-
-  useEffect(() => {
-    if (!filteredLocations.length) {
-      setSelectedLocationId(null)
-      return
-    }
-
-    setSelectedLocationId((current) => {
-      if (current && filteredLocations.some((location) => location.id === current)) {
-        return current
-      }
-
-      return filteredLocations[0].id
-    })
-  }, [filteredLocations])
 
   const mappedLocations = useMemo(
     () =>
@@ -88,25 +83,45 @@ function LocationsPage() {
     [filteredLocations],
   )
 
+  useEffect(() => {
+    if (!filteredLocations.length) {
+      setSelectedLocationId(null)
+      return
+    }
+
+    setSelectedLocationId((current) => {
+      if (
+        current &&
+        filteredLocations.some((location) => location.id === current)
+      ) {
+        return current
+      }
+
+      return filteredLocations[0].id
+    })
+  }, [filteredLocations])
+
   const selectedLocation =
     filteredLocations.find((location) => location.id === selectedLocationId) ??
-    filteredLocations[0] ??
     null
 
   return (
-    <div className="space-y-6">
-      <div className="location-dashboard-grid grid gap-6">
-        <section className="overflow-hidden rounded-(--radius-panel) border border-(--border-subtle) bg-(--surface-card) shadow-(--shadow-soft)">
-          <div className="location-hero-surface p-6">
-            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-              <div>
+    <div className="space-y-5 pb-20 xl:pb-6">
+      <section className="map-command-grid grid gap-5">
+        <div className="overflow-hidden rounded-[32px] border border-(--border-subtle) bg-[color:var(--surface-card)] shadow-[var(--shadow-soft)]">
+          <div className="map-stage-header p-5">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="max-w-3xl">
                 <p className="text-sm font-semibold text-(--accent-strong)">
-                  지도 기반 보관장소 관리
+                  Location Control Room
                 </p>
-                <h1 className="mt-2 text-3xl font-semibold">보관장소 좌표 대시보드</h1>
-                <p className="mt-3 max-w-2xl text-sm leading-7 text-(--text-muted)">
-                  등록된 보관장소를 지도에서 바로 확인하고, 좌표가 없는 장소를 찾아
-                  수정 화면에서 보완할 수 있습니다.
+                <h1 className="mt-2 text-[2.05rem] leading-[1.08] font-semibold">
+                  지도의 목록 화면에서 가볍게 관리해 보세요
+                </h1>
+                <p className="mt-3 text-sm leading-6 text-(--text-muted)">
+                  검색과 정렬은 상단에서, 선택과 편집은 지도와 우측 패널에서
+                  이어집니다. 좌표가 없는 장소도 카드에서 바로 찾아 수정
+                  흐름으로 보낼 수 있어요.
                 </p>
               </div>
 
@@ -114,44 +129,53 @@ function LocationsPage() {
                 <button
                   type="button"
                   onClick={() => void loadLocations()}
-                  className="inline-flex items-center gap-2 rounded-full border border-(--border-subtle) bg-white px-4 py-2 text-sm font-semibold"
+                  className="inline-flex items-center gap-2 rounded-full border border-(--border-subtle) bg-white px-3.5 py-2.5 text-[13px] font-semibold"
                 >
                   <RefreshCw className="h-4 w-4" />
-                  새로고침
+                  동기화
                 </button>
                 <Link
                   to="/locations/new"
-                  className="rounded-full bg-(--accent-strong) px-4 py-2 text-sm font-semibold text-white shadow-(--shadow-accent)"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-(--accent-strong) px-3.5 py-2.5 text-center text-[13px] font-semibold text-[color:#fff] shadow-[var(--shadow-accent)]"
                 >
-                  장소 등록
+                  <Plus className="h-4 w-4 text-white" />
+                  <p className="text-white">새 장소</p>
                 </Link>
               </div>
             </div>
 
-            <div className="location-filter-grid mt-5 grid gap-3">
-              <input
-                value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
-                className="rounded-(--radius-card) border border-white/70 bg-white/90 px-4 py-3 text-sm outline-none placeholder:text-(--text-muted)"
-                placeholder="장소명, 상세 위치, 보관 번호로 검색"
-              />
-              <select
-                value={sortKey}
-                onChange={(event) =>
-                  setSortKey(event.target.value as 'latest' | 'number' | 'name')
-                }
-                className="rounded-(--radius-card) border border-white/70 bg-white/90 px-4 py-3 text-sm outline-none"
-              >
-                <option value="latest">정렬: 최신 등록순</option>
-                <option value="number">보관 번호순</option>
-                <option value="name">장소명순</option>
-              </select>
+            <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1.35fr)_140px]">
+              <label className="flex items-center gap-3 rounded-full border border-(--border-subtle) bg-white px-4 py-3 shadow-[0_10px_24px_-22px_rgba(19,34,56,0.5)] transition focus-within:border-[color:var(--border-accent)] focus-within:ring-2 focus-within:ring-[color:var(--accent-soft)]">
+                <Search className="h-4 w-4 shrink-0 text-(--text-muted)" />
+                <input
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  className="w-full bg-transparent text-sm outline-none placeholder:text-[13px] placeholder:text-(--text-muted)"
+                  placeholder="장소명, 상세 위치, 보관 번호 검색"
+                />
+              </label>
+              <label className="relative flex items-center rounded-full border border-(--border-subtle) bg-white px-3.5 py-3 shadow-[0_10px_24px_-22px_rgba(19,34,56,0.5)] transition focus-within:border-[color:var(--border-accent)] focus-within:ring-2 focus-within:ring-[color:var(--accent-soft)]">
+                <select
+                  value={sortKey}
+                  onChange={(event) =>
+                    setSortKey(
+                      event.target.value as 'latest' | 'number' | 'name',
+                    )
+                  }
+                  className="w-full appearance-none bg-transparent pr-6 text-[13px] font-medium outline-none"
+                >
+                  <option value="latest">최신 등록순</option>
+                  <option value="number">보관 번호순</option>
+                  <option value="name">장소명순</option>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-4 h-4 w-4 text-(--text-muted)" />
+              </label>
             </div>
           </div>
 
           <div className="p-4">
             <NaverLocationMap
-              className="min-h-[420px]"
+              className="min-h-[520px]"
               markers={mappedLocations.map((location) => ({
                 id: location.id,
                 name: location.name,
@@ -160,122 +184,110 @@ function LocationsPage() {
                 latitude: location.latitude,
                 longitude: location.longitude,
               }))}
-              activeMarkerId={selectedLocation?.id ?? null}
+              activeMarkerId={selectedLocationId}
               selectedCoordinates={
                 selectedLocation && hasLocationCoordinates(selectedLocation)
                   ? selectedLocation
                   : null
               }
               onMarkerSelect={(marker) => setSelectedLocationId(marker.id)}
-              emptyMessage="좌표가 등록된 보관장소가 아직 없습니다."
+              emptyMessage={
+                loading
+                  ? '장소 좌표를 불러오는 중이에요.'
+                  : '현재 조건에 맞는 좌표 등록 장소가 없어요.'
+              }
             />
           </div>
-        </section>
+        </div>
 
-        <aside className="space-y-6">
+        <div className="space-y-5">
           <SectionPanel>
             <div className="flex items-center gap-2">
-              <Compass className="h-4 w-4 text-(--accent-strong)" />
-              <h2 className="text-xl font-semibold">좌표 현황</h2>
-            </div>
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-(--radius-card) bg-(--surface-soft) p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-(--text-muted)">
-                  전체 장소
-                </p>
-                <p className="mt-2 text-2xl font-semibold">{filteredLocations.length}</p>
-              </div>
-              <div className="rounded-(--radius-card) bg-(--surface-soft) p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-(--text-muted)">
-                  좌표 등록 완료
-                </p>
-                <p className="mt-2 text-2xl font-semibold">{mappedLocations.length}</p>
-              </div>
+              <MapPinned className="h-4 w-4 text-(--accent-strong)" />
+              <h2 className="text-base font-semibold">선택한 장소 요약</h2>
             </div>
 
             {selectedLocation ? (
-              <div className="mt-5 rounded-(--radius-card) border border-(--border-subtle) p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold">{selectedLocation.name}</p>
-                    <p className="mt-1 text-sm leading-6 text-(--text-muted)">
-                      {selectedLocation.detail}
+              <div className="mt-4 space-y-4">
+                <div>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-lg font-semibold">
+                        {selectedLocation.name}
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-(--text-muted)">
+                        {selectedLocation.detail}
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-(--surface-soft) px-3 py-1 text-xs font-semibold text-(--text-muted)">
+                      {selectedLocation.number}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-[var(--radius-card)] bg-(--surface-soft) p-3.5">
+                    <p className="text-[11px] font-semibold tracking-[0.12em] text-(--text-muted) uppercase">
+                      위도
+                    </p>
+                    <p className="mt-2 text-sm font-semibold">
+                      {formatCoordinateValue(selectedLocation.latitude)}
                     </p>
                   </div>
-                  <span className="rounded-full bg-(--surface-soft) px-2.5 py-1 text-xs font-semibold text-(--text-muted)">
-                    {selectedLocation.number}
-                  </span>
+                  <div className="rounded-[var(--radius-card)] bg-(--surface-soft) p-3.5">
+                    <p className="text-[11px] font-semibold tracking-[0.12em] text-(--text-muted) uppercase">
+                      경도
+                    </p>
+                    <p className="mt-2 text-sm font-semibold">
+                      {formatCoordinateValue(selectedLocation.longitude)}
+                    </p>
+                  </div>
                 </div>
 
-                <div className="mt-4 space-y-2 text-sm text-(--text-muted)">
-                  <p>위도: {formatCoordinateValue(selectedLocation.latitude)}</p>
-                  <p>경도: {formatCoordinateValue(selectedLocation.longitude)}</p>
-                </div>
-
-                <div className="mt-4 flex flex-wrap gap-2">
+                <div className="grid gap-2">
                   <Link
                     to={`/locations/${selectedLocation.id}`}
-                    className="rounded-full bg-(--accent-strong) px-4 py-2 text-sm font-semibold text-white"
+                    className="rounded-[var(--radius-card)] border border-(--border-subtle) px-4 py-3 text-sm font-semibold transition hover:bg-(--surface-soft)"
                   >
-                    상세 보기
+                    상세 페이지 보기
                   </Link>
                   <Link
                     to={`/locations/${selectedLocation.id}/edit`}
-                    className="rounded-full border border-(--border-subtle) bg-white px-4 py-2 text-sm font-semibold"
+                    className="rounded-[var(--radius-card)] border border-(--border-subtle) px-4 py-3 text-sm font-semibold transition hover:bg-(--surface-soft)"
                   >
-                    좌표 수정
+                    수정 화면으로 이동
                   </Link>
                 </div>
               </div>
             ) : (
               <p className="mt-4 text-sm text-(--text-muted)">
-                검색 조건에 맞는 보관장소가 없습니다.
+                목록 카드나 마커를 선택하면 연결된 정보가 이곳에 표시돼요.
               </p>
             )}
+
+            {errorMessage ? (
+              <div className="mt-4 rounded-[var(--radius-card)] border border-[color:var(--danger-border)] bg-[color:var(--danger-soft)] px-4 py-3 text-sm text-[color:var(--danger-strong)]">
+                {errorMessage}
+              </div>
+            ) : null}
           </SectionPanel>
+        </div>
+      </section>
 
-          <SectionPanel>
-            <div className="flex items-center gap-2">
-              <MapPinned className="h-4 w-4 text-(--accent-strong)" />
-              <h2 className="text-xl font-semibold">운영 포인트</h2>
-            </div>
-            <ul className="mt-4 space-y-3 text-sm leading-6 text-(--text-muted)">
-              <li>좌표가 없는 장소는 지도에 표시되지 않으니 수정 화면에서 먼저 보완해 주세요.</li>
-              <li>목록 카드에도 위도와 경도가 함께 보이도록 바뀌었습니다.</li>
-              <li>네이버 지도 클릭으로 입력한 좌표는 등록/수정 화면에 자동 반영됩니다.</li>
-            </ul>
-          </SectionPanel>
-        </aside>
-      </div>
-
-      {errorMessage ? (
-        <SectionPanel>
-          <p className="text-sm text-(--danger-strong)">{errorMessage}</p>
-        </SectionPanel>
-      ) : null}
-
-      {loading ? (
-        <SectionPanel>
-          <p className="text-sm text-(--text-muted)">보관장소를 불러오는 중입니다...</p>
-        </SectionPanel>
-      ) : (
-        <section className="grid gap-4 xl:grid-cols-2">
-          {filteredLocations.map((location) => (
-            <div key={location.id} onMouseEnter={() => setSelectedLocationId(location.id)}>
-              <LocationCard location={location} to={`/locations/${location.id}`} />
-            </div>
-          ))}
-        </section>
-      )}
-
-      {!loading && !filteredLocations.length ? (
-        <SectionPanel>
-          <p className="text-sm text-(--text-muted)">
-            현재 조건에 맞는 보관장소가 없습니다.
-          </p>
-        </SectionPanel>
-      ) : null}
+      <section className="grid gap-4">
+        {filteredLocations.map((location) => (
+          <div
+            key={location.id}
+            onMouseEnter={() => setSelectedLocationId(location.id)}
+            className="cursor-pointer"
+          >
+            <LocationCard
+              location={location}
+              to={`/locations/${location.id}`}
+            />
+          </div>
+        ))}
+      </section>
     </div>
   )
 }

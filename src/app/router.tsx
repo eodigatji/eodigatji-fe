@@ -12,6 +12,7 @@ import SignupSuccessPage from '../pages/auth/SignupSuccessPage'
 import NotificationsPage from '../pages/NotificationsPage'
 import MyPage from '../pages/MyPage'
 import PostDetailPage from '../pages/PostDetailPage'
+import PostFormPage from '../pages/PostFormPage'
 import PostsPage from '../pages/PostsPage'
 import ApiStatusPage from '../pages/ApiStatusPage'
 
@@ -32,6 +33,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <HomePage /> },
       { path: 'posts', element: <PostsPage /> },
+      { path: 'posts/new', element: <PostFormPage /> },
       { path: 'posts/:postId', element: <PostDetailPage /> },
       { path: 'api-status', element: <ApiStatusPage /> },
       { path: 'locations', element: <LocationsPage /> },

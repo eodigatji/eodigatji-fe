@@ -8,8 +8,8 @@ function StatusBadge({ status }: StatusBadgeProps) {
       className={[
         'rounded-full px-2.5 py-1 text-xs font-semibold',
         status === 'LOST'
-          ? 'bg-(--lost-soft) text-(--lost-strong)'
-          : 'bg-(--found-soft) text-(--found-strong)',
+          ? 'bg-[color:var(--lost-soft)] text-[color:var(--lost-strong)]'
+          : 'bg-[color:var(--found-soft)] text-[color:var(--found-strong)]',
       ].join(' ')}
     >
       {status}
