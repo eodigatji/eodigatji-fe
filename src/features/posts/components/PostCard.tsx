@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
-import type { PostSummary } from '../types'
 import StatusBadge from '../../../shared/components/ui/StatusBadge'
+import type { PostSummary } from '../types'
 
 type PostCardProps = {
   post: PostSummary
@@ -11,8 +11,8 @@ type PostCardProps = {
 function PostCard({ post, to, variant = 'full' }: PostCardProps) {
   const articleClassName =
     variant === 'compact'
-      ? 'rounded-[var(--radius-card)] border border-(--border-subtle) bg-(--surface-soft) p-4'
-      : 'rounded-(--radius-panel) border border-(--border-subtle) bg-[color:var(--surface-card)] p-5 shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5'
+      ? 'rounded-[var(--radius-card)] border border-(--border-subtle) bg-(--surface-soft) p-3.5'
+      : 'rounded-(--radius-panel) border border-(--border-subtle) bg-[color:var(--surface-card)] p-4 shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5'
 
   const content = (
     <article className={articleClassName}>
@@ -20,7 +20,7 @@ function PostCard({ post, to, variant = 'full' }: PostCardProps) {
         <StatusBadge status={post.status} />
         <span
           className={[
-            'rounded-full px-2.5 py-1 text-xs font-medium text-(--text-muted)',
+            'rounded-full px-2.5 py-1 text-[11px] font-medium text-(--text-muted)',
             variant === 'compact' ? 'bg-white' : 'bg-(--surface-soft)',
           ].join(' ')}
         >
@@ -39,16 +39,14 @@ function PostCard({ post, to, variant = 'full' }: PostCardProps) {
         <div className="min-w-0">
           <h3
             className={
-              variant === 'compact'
-                ? 'text-base font-semibold'
-                : 'text-lg font-semibold'
+              variant === 'compact' ? 'text-[15px] font-semibold' : 'text-base font-semibold'
             }
           >
             {post.title}
           </h3>
           <p
             className={[
-              'mt-2 text-sm leading-6 text-(--text-muted)',
+              'mt-2 text-sm leading-5 text-(--text-muted)',
               variant === 'full' ? 'max-w-2xl' : '',
             ].join(' ')}
           >
@@ -60,8 +58,8 @@ function PostCard({ post, to, variant = 'full' }: PostCardProps) {
           className={[
             'grid rounded-[var(--radius-card)] text-(--text-muted)',
             variant === 'compact'
-              ? 'min-w-32 gap-1 bg-white p-3 text-xs'
-              : 'gap-2 bg-(--surface-soft) p-4 text-sm lg:min-w-56',
+              ? 'min-w-0 gap-1 bg-white p-3 text-[11px]'
+              : 'gap-1.5 bg-(--surface-soft) p-3 text-xs lg:min-w-48',
           ].join(' ')}
         >
           <span>{variant === 'full' ? `장소: ${post.place}` : post.place}</span>

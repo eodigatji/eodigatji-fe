@@ -1,12 +1,13 @@
 import {
   FileText,
   LogIn,
+  LogOut,
   MessageSquare,
   Thermometer,
-  UserRound,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuthStore } from '../features/auth/store/authStore'
 import {
   getMyPageComments,
   getMyPagePosts,
@@ -16,12 +17,15 @@ import {
   type MyPagePostDto,
   type MyPageProfileDto,
 } from '../features/mypage/api/mypage'
-import { useAuthStore } from '../features/auth/store/authStore'
 import SectionPanel from '../shared/components/ui/SectionPanel'
 import { getApiErrorMessage } from '../shared/utils/getApiErrorMessage'
 
 function MyPage() {
+  const navigate = useNavigate()
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const clearTokens = useAuthStore((state) => state.clearTokens)
+  const clearVerifiedEmail = useAuthStore((state) => state.clearVerifiedEmail)
+
   const [profile, setProfile] = useState<MyPageProfileDto | null>(null)
   const [temperature, setTemperature] = useState<number | null>(null)
   const [posts, setPosts] = useState<MyPagePostDto[]>([])
@@ -31,6 +35,11 @@ function MyPage() {
 
   useEffect(() => {
     if (!isAuthenticated) {
+      setProfile(null)
+      setTemperature(null)
+      setPosts([])
+      setComments([])
+      setErrorMessage('')
       setLoading(false)
       return
     }
@@ -80,7 +89,7 @@ function MyPage() {
         setErrorMessage(
           getApiErrorMessage(
             failedResult.reason,
-            '내 정보를 모두 불러오지 못했어요. 잠시 후 다시 확인해 주세요.',
+            '마이페이지 정보를 모두 불러오지 못했어요. 잠시 후 다시 확인해 주세요.',
           ),
         )
       }
@@ -95,6 +104,12 @@ function MyPage() {
     }
   }, [isAuthenticated])
 
+  function handleLogout() {
+    clearVerifiedEmail()
+    clearTokens()
+    navigate('/auth/login', { replace: true })
+  }
+
   if (!isAuthenticated) {
     return (
       <div className="space-y-6">
@@ -105,11 +120,11 @@ function MyPage() {
             </span>
             <div>
               <h1 className="text-3xl font-semibold">
-                로그인하고 내 정보를 확인해 보세요
+                로그인 후 내 정보를 확인해 보세요
               </h1>
-              <p className="mt-3 text-sm leading-7 text-(--text-muted)">
-                마이페이지에서 닉네임과 학번, 활동 온도, 내가 쓴 글과 댓글을
-                간단하게 확인할 수 있어요.
+              <p className="mt-3 text-sm leading-6 text-(--text-muted)">
+                마이페이지에서 닉네임과 학번, 활동 온도, 작성한 글과 댓글을 한
+                번에 확인할 수 있어요.
               </p>
               <div className="mt-4 flex flex-wrap gap-3">
                 <Link
@@ -122,7 +137,7 @@ function MyPage() {
                   to="/locations"
                   className="rounded-full border border-(--border-subtle) bg-white px-4 py-2 text-sm font-semibold"
                 >
-                  지도 먼저 보기
+                  장소 둘러보기
                 </Link>
               </div>
             </div>
@@ -134,36 +149,74 @@ function MyPage() {
 
   return (
     <div className="space-y-6">
-      <SectionPanel className="p-6">
-        <div className="profile-summary-grid grid gap-6">
-          <div>
-            <p className="text-sm font-semibold text-(--accent-strong)">
-              내 계정
-            </p>
-            <h1 className="mt-2 text-3xl font-semibold">
-              {profile ? `${profile.nickname}님의 활동 화면` : '내 활동 화면'}
-            </h1>
-            <p className="mt-3 text-sm leading-7 text-(--text-muted)">
-              학교 계정 정보와 내가 작성한 글, 댓글을 간단하게 확인할 수 있어요.
-            </p>
-          </div>
-          <div className="rounded-[var(--radius-card)] bg-(--surface-soft) p-5">
-            <div className="flex items-center gap-3">
-              <span className="rounded-full bg-white p-2">
-                <UserRound className="h-5 w-5 text-(--accent-strong)" />
-              </span>
-              <div className="min-w-0">
-                <p className="text-[12px] font-medium text-(--text-muted)">
-                  대표 정보
-                </p>
-                <p className="mt-1 text-base leading-tight font-semibold break-all sm:text-lg">
-                  {profile?.email ?? '계정 정보를 불러오는 중'}
+      <section className="space-y-3 px-1">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-lg font-semibold">내 정보</h1>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-(--border-subtle) bg-white px-3.5 py-2 text-[13px] font-semibold text-(--text-muted)"
+          >
+            <LogOut className="h-4 w-4 text-red-900" />
+            <span className="text-red-900">로그아웃</span>
+          </button>
+        </div>
+
+        <div className="overflow-hidden rounded-[20px] border border-(--border-subtle) bg-white">
+          {[
+            {
+              label: '계정 이메일',
+              value: profile?.email ?? '계정 정보를 불러오는 중',
+              valueClassName: 'break-all',
+            },
+            {
+              label: '닉네임',
+              value: profile?.nickname ?? (loading ? '불러오는 중' : '-'),
+              valueClassName: '',
+            },
+            {
+              label: '학번',
+              value: profile?.studentNumber ?? (loading ? '불러오는 중' : '-'),
+              valueClassName: '',
+            },
+            {
+              label: '활동 온도',
+              value:
+                typeof temperature === 'number'
+                  ? `${temperature}도`
+                  : loading
+                    ? '불러오는 중'
+                    : '-',
+              valueClassName: 'text-(--accent-strong)',
+            },
+          ].map((item, index, items) => (
+            <div
+              key={item.label}
+              className={[
+                'flex items-start justify-between gap-4 px-4 py-3',
+                index < items.length - 1 ? 'border-b border-(--border-subtle)' : '',
+              ].join(' ')}
+            >
+              <p className="shrink-0 text-sm text-(--text-muted)">{item.label}</p>
+              <div className="flex items-center gap-2">
+                {item.label === '활동 온도' ? (
+                  <span className="grid h-7 w-7 place-items-center rounded-full bg-(--accent-soft)">
+                    <Thermometer className="h-3.5 w-3.5 text-(--accent-strong)" />
+                  </span>
+                ) : null}
+                <p
+                  className={[
+                    'text-right text-sm font-semibold',
+                    item.valueClassName,
+                  ].join(' ')}
+                >
+                  {item.value}
                 </p>
               </div>
             </div>
-          </div>
+          ))}
         </div>
-      </SectionPanel>
+      </section>
 
       {errorMessage ? (
         <SectionPanel>
@@ -172,45 +225,6 @@ function MyPage() {
           </p>
         </SectionPanel>
       ) : null}
-
-      <section className="grid gap-4 sm:grid-cols-3">
-        {[
-          {
-            icon: UserRound,
-            label: '닉네임',
-            value: profile?.nickname ?? (loading ? '불러오는 중' : '-'),
-          },
-          {
-            icon: FileText,
-            label: '학번',
-            value: profile?.studentNumber ?? (loading ? '불러오는 중' : '-'),
-          },
-          {
-            icon: Thermometer,
-            label: '활동 온도',
-            value:
-              typeof temperature === 'number'
-                ? `${temperature}°`
-                : loading
-                  ? '불러오는 중'
-                  : '-',
-          },
-        ].map((item) => (
-          <SectionPanel key={item.label}>
-            <div className="flex flex-col items-start gap-3">
-              <span className="rounded-full bg-(--surface-soft) p-2">
-                <item.icon className="h-4 w-4 text-(--accent-strong)" />
-              </span>
-              <div className="w-full min-w-0">
-                <p className="text-sm text-(--text-muted)">{item.label}</p>
-                <p className="mt-1 text-sm leading-tight font-semibold break-all">
-                  {item.value}
-                </p>
-              </div>
-            </div>
-          </SectionPanel>
-        ))}
-      </section>
 
       <div className="detail-sidebar-grid grid gap-6">
         <SectionPanel>

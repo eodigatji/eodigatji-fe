@@ -1,4 +1,5 @@
 export type PostStatus = 'LOST' | 'FOUND'
+export type PostCategory = 'ELECTRONICS' | 'WALLET' | 'FASHION' | 'BOOK' | 'ETC'
 
 export type PostSummary = {
   id: number

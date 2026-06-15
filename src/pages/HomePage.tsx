@@ -12,45 +12,19 @@ import {
   hasLocationCoordinates,
 } from '../features/locations/lib/locationCoordinates'
 import {
-  getPost,
-  getPosts,
   type PostDetailDto,
 } from '../features/posts/api/posts'
+import { getPostCategoryLabel } from '../features/posts/constants'
+import {
+  getAllPostDetails,
+  getPostCountMap,
+} from '../features/posts/lib/postCounts'
 import SectionPanel from '../shared/components/ui/SectionPanel'
 import { getApiErrorMessage } from '../shared/utils/getApiErrorMessage'
-
-const HOME_POST_PAGE_SIZE = 50
 
 type LocationDashboardItem = LocationDto & {
   itemCount: number
   recentPosts: PostDetailDto[]
-}
-
-async function getAllPostDetails() {
-  let page = 0
-  let totalPages = 1
-  const postIds: number[] = []
-
-  while (page < totalPages) {
-    const response = await getPosts({
-      page,
-      size: HOME_POST_PAGE_SIZE,
-      sort: 'createdAt,DESC',
-    })
-
-    postIds.push(...response.content.map((post) => post.id))
-    totalPages = Math.max(response.totalPages, 1)
-    page += 1
-  }
-
-  const uniquePostIds = [...new Set(postIds)]
-  const settledPosts = await Promise.allSettled(
-    uniquePostIds.map((postId) => getPost(postId)),
-  )
-
-  return settledPosts.flatMap((result) =>
-    result.status === 'fulfilled' ? [result.value] : [],
-  )
 }
 
 function HomePage() {
@@ -141,14 +115,16 @@ function HomePage() {
     return groupedPosts
   }, [posts])
 
+  const postCountMap = useMemo(() => getPostCountMap(posts), [posts])
+
   const locationItems = useMemo<LocationDashboardItem[]>(
     () =>
       locations.map((location) => ({
         ...location,
-        itemCount: postsByLocation.get(location.id)?.length ?? 0,
+        itemCount: postCountMap.get(location.id) ?? 0,
         recentPosts: postsByLocation.get(location.id) ?? [],
       })),
-    [locations, postsByLocation],
+    [locations, postCountMap, postsByLocation],
   )
 
   const mappedLocations = useMemo(
@@ -202,7 +178,7 @@ function HomePage() {
           <div className="grid gap-4 p-4">
             <div className="location-map-frame min-h-[320px]">
               <div className="location-map-overlay">
-                <p className="text-sm font-medium text-(color:--text-strong)">
+                <p className="text-sm font-medium text-(--text-strong)">
                   로그인하면 지도 위 보관 장소 마커와 장소별 물품 수를 바로 볼
                   수 있어요.
                 </p>
@@ -345,7 +321,7 @@ function HomePage() {
                         >
                           <span className="min-w-0 truncate">{post.title}</span>
                           <span className="shrink-0 text-(color:--text-muted)">
-                            {post.category}
+                            {getPostCategoryLabel(post.category)}
                           </span>
                         </Link>
                       ))}

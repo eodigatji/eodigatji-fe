@@ -1,6 +1,7 @@
 import {
   BadgeHelp,
   MapPinned,
+  Plus,
   Search,
   ShieldCheck,
   UserRound,
@@ -26,6 +27,10 @@ function isPostDetailPath(pathname: string) {
   return /^\/posts\/\d+$/.test(pathname)
 }
 
+function isPostEditPath(pathname: string) {
+  return /^\/posts\/\d+\/edit$/.test(pathname)
+}
+
 function isNavigationItemActive(pathname: string, itemTo: string) {
   if (itemTo === '/') {
     return pathname === '/'
@@ -43,7 +48,8 @@ function isNavigationItemActive(pathname: string, itemTo: string) {
     return (
       pathname === '/posts' ||
       pathname === '/posts/new' ||
-      isPostDetailPath(pathname)
+      isPostDetailPath(pathname) ||
+      isPostEditPath(pathname)
     )
   }
 
@@ -60,6 +66,30 @@ function isNavigationItemActive(pathname: string, itemTo: string) {
   }
 
   return pathname === itemTo
+}
+
+function getHeaderTitle(pathname: string) {
+  if (pathname === '/') {
+    return '메인 지도'
+  }
+
+  if (pathname.startsWith('/posts')) {
+    return '분실물 찾기'
+  }
+
+  if (pathname.startsWith('/locations')) {
+    return '보관 장소'
+  }
+
+  if (pathname === '/mypage') {
+    return '내 정보'
+  }
+
+  if (pathname === '/api-status') {
+    return '이용 안내'
+  }
+
+  return '어디갔지'
 }
 
 function MainLayout() {
@@ -81,38 +111,34 @@ function MainLayout() {
         { to: '/api-status', label: '안내', icon: BadgeHelp },
       ]
 
+  const headerTitle = getHeaderTitle(pathname)
+
   return (
-    <div className="mobile-frame-app min-h-screen bg-(color:--surface-base) text-(color:--text-strong)">
+    <div className="mobile-frame-app min-h-screen bg-(--surface-base) text-(--text-strong)">
       <div className="mobile-frame-shell mx-auto min-h-screen">
         <header className="sticky top-0 z-30 border-b border-white/70 bg-white/92 backdrop-blur-xl">
-          <div className="mobile-topbar flex items-center gap-2 px-3 py-3">
-            <NavLink
-              to="/"
-              className="mobile-brand-chip flex min-w-0 flex-1 items-center gap-2 rounded-full border border-(color:--border-subtle) bg-white px-2.5 py-2 shadow-[0_18px_34px_-28px_rgba(19,34,56,0.65)]"
-            >
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-(color:--accent-strong) text-sm font-semibold text-white">
-                M
-              </span>
-              <div className="min-w-0">
-                <p className="text-[15px] font-semibold">메인 지도</p>
-                <p className="text-[11px] leading-4 text-(color:--text-muted)">
-                  보관 장소와 물품 현황을 먼저 확인하는 홈
-                </p>
-              </div>
-            </NavLink>
+          <div className="flex items-center justify-between gap-3 px-3 py-3">
+            <div className="min-w-0">
+              <NavLink
+                to="/"
+                className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.14em] text-(--accent-strong)"
+              >
+                <MapPinned className="h-3.5 w-3.5" />
+                EODIGATJI
+              </NavLink>
+              <p className="mt-1 truncate text-[18px] font-semibold">{headerTitle}</p>
+            </div>
 
             <NavLink
-              to="/posts"
-              className="mobile-search-action app-command-bar grid h-11 w-11 shrink-0 place-items-center rounded-[24px] border border-(color:--border-subtle) bg-(color:--surface-soft)"
+              to={isAuthenticated ? '/posts/new' : '/auth/login'}
+              className="mobile-topbar-button inline-flex shrink-0 items-center gap-2 rounded-full bg-(color:--accent-strong) px-3.5 py-2.5 text-[13px] font-semibold text-[color:#fff] shadow-(--shadow-accent)"
             >
-              <Search className="h-5 w-5 text-(color:--text-muted)" />
-            </NavLink>
-
-            <NavLink
-              to={isAuthenticated ? '/locations/new' : '/auth/login'}
-              className="mobile-topbar-button hidden shrink-0 items-center justify-center rounded-full bg-(color:--accent-strong) px-3 py-2 text-center text-[13px] font-semibold text-[color:#fff] shadow-(--shadow-accent) sm:inline-flex"
-            >
-              {isAuthenticated ? '장소 등록' : '로그인'}
+              {isAuthenticated ? (
+                <Plus className="h-4 w-4" />
+              ) : (
+                <ShieldCheck className="h-4 w-4" />
+              )}
+              <span>{isAuthenticated ? '글 등록' : '로그인'}</span>
             </NavLink>
           </div>
         </header>

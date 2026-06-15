@@ -271,6 +271,31 @@ button:disabled,
   letter-spacing: -0.04em;
 }
 
+.mobile-frame-app .map-stage-header p,
+.mobile-frame-app .map-stage-header li,
+.mobile-frame-app .map-stage-header input,
+.mobile-frame-app .map-stage-header select,
+.mobile-frame-app .map-stage-header button {
+  line-height: 1.45;
+}
+
+.mobile-frame-app .location-detail-metrics,
+.mobile-frame-app .post-detail-summary-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.mobile-frame-app .location-detail-actions > *,
+.mobile-frame-app .post-detail-actions > * {
+  flex: 1 1 180px;
+  min-width: 0;
+  justify-content: center;
+}
+
+.mobile-frame-app .location-detail-metrics p,
+.mobile-frame-app .post-detail-summary-grid p {
+  word-break: keep-all;
+}
+
 .mobile-frame-app .mobile-topbar-button,
 .mobile-frame-app .mobile-search-action,
 .mobile-frame-app .mobile-brand-chip {
@@ -311,5 +336,23 @@ button:disabled,
   .mobile-frame-shell {
     width: 100%;
     box-shadow: none;
+  }
+
+  .mobile-frame-app .map-stage-header {
+    padding: 0.95rem;
+  }
+
+  .mobile-frame-app .map-stage-header h1 {
+    font-size: 1.9rem;
+    line-height: 1.1;
+  }
+
+  .mobile-frame-app .map-stage-header p {
+    font-size: 0.9rem;
+  }
+
+  .mobile-frame-app button,
+  .mobile-frame-app a[role='button'] {
+    touch-action: manipulation;
   }
 }

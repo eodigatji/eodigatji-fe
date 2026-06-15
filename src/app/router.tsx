@@ -33,7 +33,8 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <HomePage /> },
       { path: 'posts', element: <PostsPage /> },
-      { path: 'posts/new', element: <PostFormPage /> },
+      { path: 'posts/new', element: <PostFormPage mode="create" /> },
+      { path: 'posts/:postId/edit', element: <PostFormPage mode="edit" /> },
       { path: 'posts/:postId', element: <PostDetailPage /> },
       { path: 'api-status', element: <ApiStatusPage /> },
       { path: 'locations', element: <LocationsPage /> },

@@ -11,6 +11,10 @@ import {
   formatCoordinateValue,
   hasLocationCoordinates,
 } from '../features/locations/lib/locationCoordinates'
+import {
+  getAllPostDetails,
+  getPostCountMap,
+} from '../features/posts/lib/postCounts'
 import SectionPanel from '../shared/components/ui/SectionPanel'
 import { getApiErrorMessage } from '../shared/utils/getApiErrorMessage'
 
@@ -21,6 +25,7 @@ function LocationsPage() {
   const [selectedLocationId, setSelectedLocationId] = useState<number | null>(
     null,
   )
+  const [postCountMap, setPostCountMap] = useState<Map<number, number>>(new Map())
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
 
@@ -29,8 +34,28 @@ function LocationsPage() {
     setErrorMessage('')
 
     try {
-      const data = await getLocations()
-      setLocations(data)
+      const [locationsResult, postsResult] = await Promise.allSettled([
+        getLocations(),
+        getAllPostDetails(),
+      ])
+
+      if (locationsResult.status !== 'fulfilled') {
+        throw locationsResult.reason
+      }
+
+      setLocations(locationsResult.value)
+
+      if (postsResult.status === 'fulfilled') {
+        setPostCountMap(getPostCountMap(postsResult.value))
+      } else {
+        setPostCountMap(new Map())
+        setErrorMessage(
+          getApiErrorMessage(
+            postsResult.reason,
+            '장소는 불러왔지만 분실물 개수 집계는 아직 준비되지 않았어요.',
+          ),
+        )
+      }
     } catch (error) {
       setErrorMessage(
         getApiErrorMessage(error, '보관 장소 목록을 불러오지 못했어요.'),
@@ -116,12 +141,11 @@ function LocationsPage() {
                   Location Control Room
                 </p>
                 <h1 className="mt-2 text-[2.05rem] leading-[1.08] font-semibold">
-                  지도의 목록 화면에서 가볍게 관리해 보세요
+                  지도와 목록 화면에서 장소를 가볍게 관리해보세요
                 </h1>
                 <p className="mt-3 text-sm leading-6 text-(--text-muted)">
-                  검색과 정렬은 상단에서, 선택과 편집은 지도와 우측 패널에서
-                  이어집니다. 좌표가 없는 장소도 카드에서 바로 찾아 수정
-                  흐름으로 보낼 수 있어요.
+                  검색과 정렬은 상단에서, 선택 결과는 지도와 요약 패널에서 이어집니다.
+                  각 장소 마커에는 메인 페이지처럼 연결된 분실물 개수도 함께 보여줍니다.
                 </p>
               </div>
 
@@ -132,7 +156,7 @@ function LocationsPage() {
                   className="inline-flex items-center gap-2 rounded-full border border-(--border-subtle) bg-white px-3.5 py-2.5 text-[13px] font-semibold"
                 >
                   <RefreshCw className="h-4 w-4" />
-                  동기화
+                  새로고침
                 </button>
                 <Link
                   to="/locations/new"
@@ -180,6 +204,7 @@ function LocationsPage() {
                 id: location.id,
                 name: location.name,
                 detail: location.detail,
+                itemCount: postCountMap.get(location.id) ?? 0,
                 number: location.number,
                 latitude: location.latitude,
                 longitude: location.longitude,
@@ -219,9 +244,14 @@ function LocationsPage() {
                         {selectedLocation.detail}
                       </p>
                     </div>
-                    <span className="rounded-full bg-(--surface-soft) px-3 py-1 text-xs font-semibold text-(--text-muted)">
-                      {selectedLocation.number}
-                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="rounded-full bg-(--surface-soft) px-3 py-1 text-xs font-semibold text-(--text-muted)">
+                        {selectedLocation.number}
+                      </span>
+                      <span className="rounded-full bg-(--accent-soft) px-3 py-1 text-xs font-semibold text-(--accent-strong)">
+                        물품 {postCountMap.get(selectedLocation.id) ?? 0}건
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -261,7 +291,7 @@ function LocationsPage() {
               </div>
             ) : (
               <p className="mt-4 text-sm text-(--text-muted)">
-                목록 카드나 마커를 선택하면 연결된 정보가 이곳에 표시돼요.
+                목록 카드나 마커를 선택하면 연결된 정보가 여기서 함께 표시돼요.
               </p>
             )}
 
@@ -281,10 +311,7 @@ function LocationsPage() {
             onMouseEnter={() => setSelectedLocationId(location.id)}
             className="cursor-pointer"
           >
-            <LocationCard
-              location={location}
-              to={`/locations/${location.id}`}
-            />
+            <LocationCard location={location} to={`/locations/${location.id}`} />
           </div>
         ))}
       </section>

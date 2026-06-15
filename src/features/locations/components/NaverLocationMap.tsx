@@ -252,7 +252,7 @@ function NaverLocationMap({
 
       {status !== 'ready' ? (
         <div className="location-map-overlay">
-          <p className="text-sm font-medium text-(color:--text-strong)">
+          <p className="text-sm font-medium text-(--text-strong)">
             {status === 'error' ? errorMessage : emptyMessage}
           </p>
         </div>

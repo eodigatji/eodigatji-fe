@@ -1,5 +1,5 @@
 import apiClient from '../../../shared/api/client'
-import type { PostStatus } from '../types'
+import type { PostCategory, PostStatus } from '../types'
 
 export type PostListItemDto = {
   id: number
@@ -14,7 +14,7 @@ export type PostDetailDto = {
   title: string
   description: string
   type: PostStatus
-  category: string
+  category: PostCategory
   locationId: number
   userId: number
   imageUrls: string[]
@@ -42,9 +42,11 @@ export type PostCreateRequest = {
   title: string
   description: string
   type: PostStatus
-  category: string
+  category: PostCategory
   locationId: number
 }
+
+export type PostUpdateRequest = PostCreateRequest
 
 export async function getPosts(params: GetPostsParams = {}) {
   const { data } = await apiClient.get<PostPageDto>('/v1/posts', { params })
@@ -60,6 +62,18 @@ export async function createPost(
   payload: PostCreateRequest,
   images: File[] = [],
 ) {
+  const formData = buildPostFormData(payload, images)
+
+  const { data } = await apiClient.post<number>('/v1/posts', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+
+  return data
+}
+
+function buildPostFormData(payload: PostCreateRequest, images: File[] = []) {
   const formData = new FormData()
   formData.append(
     'request',
@@ -70,11 +84,23 @@ export async function createPost(
     formData.append('images', image)
   }
 
-  const { data } = await apiClient.post<number>('/v1/posts', formData, {
+  return formData
+}
+
+export async function updatePost(
+  postId: number,
+  payload: PostUpdateRequest,
+  images: File[] = [],
+) {
+  const formData = buildPostFormData(payload, images)
+
+  await apiClient.patch(`/v1/posts/${postId}`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
   })
+}
 
-  return data
+export async function deletePost(postId: number) {
+  await apiClient.delete(`/v1/posts/${postId}`)
 }

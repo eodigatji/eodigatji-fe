@@ -26,9 +26,7 @@ function SignupEmailPage() {
 
     try {
       await sendVerificationEmail(email)
-      setMessage(
-        '인증 코드를 보냈어요. 학교 이메일함에서 메일을 확인해 주세요.',
-      )
+      setMessage('인증 코드를 보냈어요. 학교 이메일함에서 메일을 확인해 주세요.')
     } catch (error) {
       setErrorMessage(
         getApiErrorMessage(
@@ -50,13 +48,10 @@ function SignupEmailPage() {
       await verifyEmailCode(email, code)
       setVerifiedEmail(email)
       setIsVerified(true)
-      setMessage('이메일 인증이 완료됐어요.')
+      setMessage('이메일 인증이 완료되었어요.')
     } catch (error) {
       setErrorMessage(
-        getApiErrorMessage(
-          error,
-          '인증번호가 맞지 않아요. 다시 확인해 주세요.',
-        ),
+        getApiErrorMessage(error, '인증번호가 맞지 않아요. 다시 확인해 주세요.'),
       )
     } finally {
       setVerifying(false)
@@ -64,12 +59,10 @@ function SignupEmailPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="space-y-2">
-        <p className="text-sm font-semibold text-(--accent-strong)">
-          회원가입 1단계
-        </p>
-        <h1 className="text-3xl font-semibold">학교 이메일 인증</h1>
+        <p className="text-sm font-semibold text-(--accent-strong)">회원가입 1단계</p>
+        <h1 className="text-[2.05rem] leading-[1.08] font-semibold">학교 이메일 인증</h1>
         <p className="text-sm leading-6 text-(--text-muted)">
           강남대학교 이메일을 먼저 확인하면 다음 단계에서 닉네임과 학번을 입력해
           계정을 만들 수 있어요.
@@ -93,9 +86,9 @@ function SignupEmailPage() {
               type="button"
               disabled={sending || !email}
               onClick={handleSendEmail}
-              className="rounded-full bg-(--accent-strong) px-4 py-3 text-sm font-semibold text-white shadow-[var(--shadow-accent)] disabled:opacity-60"
+              className="rounded-full bg-(--accent-strong) px-3.5 py-2.5 text-[13px] font-semibold text-white shadow-[var(--shadow-accent)] disabled:opacity-60"
             >
-              {sending ? '보내는 중...' : '인증코드 보내기'}
+              {sending ? '전송 중...' : '인증코드 보내기'}
             </button>
           </div>
         </label>
@@ -113,7 +106,7 @@ function SignupEmailPage() {
               type="button"
               disabled={verifying || !email || !code}
               onClick={handleVerifyEmail}
-              className="rounded-full border border-(--border-subtle) bg-white px-4 py-3 text-sm font-semibold disabled:opacity-60"
+              className="rounded-full border border-(--border-subtle) bg-white px-3.5 py-2.5 text-[13px] font-semibold disabled:opacity-60"
             >
               {verifying ? '확인 중...' : '이메일 인증'}
             </button>
@@ -122,21 +115,21 @@ function SignupEmailPage() {
       </div>
 
       {message ? (
-        <p className="rounded-[var(--radius-card)] border border-(--border-subtle) bg-(--surface-soft) px-4 py-3 text-sm">
+        <p className="rounded-[var(--radius-card)] border border-(--border-subtle) bg-(--surface-soft) px-4 py-3 text-sm leading-6">
           {message}
         </p>
       ) : null}
 
       {errorMessage ? (
-        <p className="rounded-[var(--radius-card)] border border-[color:var(--danger-border)] bg-[color:var(--danger-soft)] px-4 py-3 text-sm text-[color:var(--danger-strong)]">
+        <p className="rounded-[var(--radius-card)] border border-[color:var(--danger-border)] bg-[color:var(--danger-soft)] px-4 py-3 text-sm leading-6 text-[color:var(--danger-strong)]">
           {errorMessage}
         </p>
       ) : null}
 
-      <div className="flex items-center justify-between rounded-[var(--radius-card)] bg-(--surface-soft) p-4">
+      <div className="flex items-center justify-between gap-3 rounded-[var(--radius-card)] bg-(--surface-soft) p-4">
         <div>
           <p className="text-sm font-semibold">다음 단계</p>
-          <p className="mt-1 text-sm text-(--text-muted)">
+          <p className="mt-1 text-sm leading-6 text-(--text-muted)">
             이메일 인증이 끝나면 프로필 정보를 입력할 수 있어요.
           </p>
         </div>
@@ -144,7 +137,7 @@ function SignupEmailPage() {
           type="button"
           disabled={!isVerified}
           onClick={() => navigate('/auth/signup/profile')}
-          className="rounded-full bg-(--accent-strong) px-4 py-2 text-sm font-semibold text-white shadow-[var(--shadow-accent)] disabled:opacity-50"
+          className="shrink-0 rounded-full bg-(--accent-strong) px-3.5 py-2.5 text-[13px] font-semibold text-white shadow-[var(--shadow-accent)] disabled:opacity-50"
         >
           다음
         </button>
