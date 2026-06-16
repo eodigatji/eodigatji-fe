@@ -216,6 +216,18 @@ button:disabled,
     background-color 140ms ease;
 }
 
+.location-map-marker.is-within-50m {
+  background: #16a34a;
+  border-color: rgba(240, 253, 244, 0.98);
+  box-shadow: 0 20px 34px -20px rgba(22, 163, 74, 0.72);
+}
+
+.location-map-marker.is-within-100m {
+  background: #f59e0b;
+  border-color: rgba(255, 251, 235, 0.98);
+  box-shadow: 0 20px 34px -20px rgba(245, 158, 11, 0.74);
+}
+
 .location-map-marker.is-active {
   background: var(--text-strong);
   box-shadow: 0 22px 38px -22px rgba(19, 34, 56, 0.85);

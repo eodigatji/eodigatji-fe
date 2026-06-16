@@ -1,12 +1,17 @@
 import {
-  CalendarDays,
   ImageIcon,
   MapPinned,
   MessageSquare,
   PencilLine,
   Trash2,
 } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+} from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   createComment,
@@ -76,7 +81,9 @@ function PostDetailPage() {
   const [commentContent, setCommentContent] = useState('')
   const [loading, setLoading] = useState(true)
   const [submittingComment, setSubmittingComment] = useState(false)
-  const [deletingCommentId, setDeletingCommentId] = useState<number | null>(null)
+  const [deletingCommentId, setDeletingCommentId] = useState<number | null>(
+    null,
+  )
   const [deletingPost, setDeletingPost] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -178,7 +185,9 @@ function PostDetailPage() {
     }
 
     if (!currentUserId) {
-      setErrorMessage('현재 사용자 정보를 확인할 수 없어 댓글을 등록하지 못했어요. 다시 로그인 후 시도해주세요.')
+      setErrorMessage(
+        '현재 사용자 정보를 확인할 수 없어 댓글을 등록하지 못했어요. 다시 로그인 후 시도해주세요.',
+      )
       return
     }
 
@@ -193,9 +202,7 @@ function PostDetailPage() {
       setCommentContent('')
       await loadComments(numericPostId)
     } catch (error) {
-      setErrorMessage(
-        getApiErrorMessage(error, '댓글을 등록하지 못했어요.'),
-      )
+      setErrorMessage(getApiErrorMessage(error, '댓글을 등록하지 못했어요.'))
     } finally {
       setSubmittingComment(false)
     }
@@ -220,9 +227,7 @@ function PostDetailPage() {
       await deleteComment(numericPostId, commentId)
       await loadComments(numericPostId)
     } catch (error) {
-      setErrorMessage(
-        getApiErrorMessage(error, '댓글을 삭제하지 못했어요.'),
-      )
+      setErrorMessage(getApiErrorMessage(error, '댓글을 삭제하지 못했어요.'))
     } finally {
       setDeletingCommentId(null)
     }
@@ -246,9 +251,7 @@ function PostDetailPage() {
       await deletePost(post.id)
       navigate('/posts')
     } catch (error) {
-      setErrorMessage(
-        getApiErrorMessage(error, '게시글을 삭제하지 못했어요.'),
-      )
+      setErrorMessage(getApiErrorMessage(error, '게시글을 삭제하지 못했어요.'))
     } finally {
       setDeletingPost(false)
     }
@@ -452,10 +455,14 @@ function PostDetailPage() {
                         <button
                           type="button"
                           disabled={deletingCommentId === comment.commentId}
-                          onClick={() => void handleDeleteComment(comment.commentId)}
+                          onClick={() =>
+                            void handleDeleteComment(comment.commentId)
+                          }
                           className="rounded-full border border-[color:var(--danger-border)] bg-white px-3 py-1.5 text-xs font-semibold text-[color:var(--danger-strong)] disabled:opacity-60"
                         >
-                          {deletingCommentId === comment.commentId ? '삭제 중...' : '삭제'}
+                          {deletingCommentId === comment.commentId
+                            ? '삭제 중...'
+                            : '삭제'}
                         </button>
                       ) : null}
                     </div>
@@ -471,30 +478,6 @@ function PostDetailPage() {
               아직 등록된 댓글이 없어요.
             </div>
           )}
-        </SectionPanel>
-
-        <SectionPanel>
-          <div className="flex items-center gap-2">
-            <CalendarDays className="h-4 w-4 text-(--accent-strong)" />
-            <h2 className="text-xl font-semibold">다음 이동</h2>
-          </div>
-          <p className="mt-2 text-sm leading-6 text-(--text-muted)">
-            다른 게시글을 계속 확인하거나, 연결된 보관 장소 상세로 이동해서 실제 위치를 함께 살펴볼 수 있어요.
-          </p>
-          <div className="post-detail-actions mt-4 flex flex-wrap gap-3">
-            <Link
-              to="/posts"
-              className="rounded-full bg-(--accent-strong) px-3.5 py-2.5 text-[13px] font-semibold text-white shadow-(--shadow-accent)"
-            >
-              목록으로 돌아가기
-            </Link>
-            <Link
-              to="/api-status"
-              className="rounded-full border border-(--border-subtle) bg-white px-3.5 py-2.5 text-[13px] font-semibold"
-            >
-              API 가이드 보기
-            </Link>
-          </div>
         </SectionPanel>
       </aside>
     </div>

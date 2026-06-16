@@ -8,8 +8,11 @@ import {
 } from '../features/locations/api/locations'
 import NaverLocationMap from '../features/locations/components/NaverLocationMap'
 import {
+  calculateHaversineDistanceMeters,
   formatCoordinateValue,
+  getLocationProximityTier,
   hasLocationCoordinates,
+  type Coordinates,
 } from '../features/locations/lib/locationCoordinates'
 import {
   type PostDetailDto,
@@ -25,6 +28,11 @@ import { getApiErrorMessage } from '../shared/utils/getApiErrorMessage'
 type LocationDashboardItem = LocationDto & {
   itemCount: number
   recentPosts: PostDetailDto[]
+}
+
+const HOME_REFERENCE_COORDINATES: Coordinates = {
+  latitude: 37.2761,
+  longitude: 127.1333,
 }
 
 function HomePage() {
@@ -140,6 +148,29 @@ function HomePage() {
     [locationItems],
   )
 
+  const mainMapMarkers = useMemo(
+    () =>
+      mappedLocations.map((location) => {
+        const distanceMeters = calculateHaversineDistanceMeters(
+          HOME_REFERENCE_COORDINATES,
+          location,
+        )
+
+        return {
+          id: location.id,
+          name: location.name,
+          detail: location.detail,
+          itemCount: location.itemCount,
+          number: location.number,
+          latitude: location.latitude,
+          longitude: location.longitude,
+          distanceMeters,
+          proximityTier: getLocationProximityTier(distanceMeters),
+        }
+      }),
+    [mappedLocations],
+  )
+
   const selectedLocation =
     locationItems.find((location) => location.id === selectedLocationId) ??
     locationItems[0] ??
@@ -236,6 +267,15 @@ function HomePage() {
                   {item}
                 </span>
               ))}
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span className="rounded-full bg-[#dff7ea] px-2.5 py-1 text-xs font-semibold text-[#127a43]">
+                50m 이내
+              </span>
+              <span className="rounded-full bg-[#fff1d9] px-2.5 py-1 text-xs font-semibold text-[#b36a00]">
+                100m 이내
+              </span>
             </div>
 
             {errorMessage ? (
@@ -344,15 +384,7 @@ function HomePage() {
           <div className="border-t border-(color:--border-subtle) p-4">
             <NaverLocationMap
               className="min-h-[540px]"
-              markers={mappedLocations.map((location) => ({
-                id: location.id,
-                name: location.name,
-                detail: location.detail,
-                itemCount: location.itemCount,
-                number: location.number,
-                latitude: location.latitude,
-                longitude: location.longitude,
-              }))}
+              markers={mainMapMarkers}
               activeMarkerId={selectedLocation?.id ?? null}
               selectedCoordinates={
                 selectedLocation && hasLocationCoordinates(selectedLocation)

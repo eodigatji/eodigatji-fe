@@ -1,8 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { login } from '../../features/auth/api/auth'
+import { getLoginErrorMessage } from '../../features/auth/lib/getLoginErrorMessage'
 import { useAuthStore } from '../../features/auth/store/authStore'
-import { getApiErrorMessage } from '../../shared/utils/getApiErrorMessage'
 
 function LoginPage() {
   const navigate = useNavigate()
@@ -24,12 +24,7 @@ function LoginPage() {
       setTokens(tokens)
       navigate('/')
     } catch (error) {
-      setErrorMessage(
-        getApiErrorMessage(
-          error,
-          '로그인에 실패했어요. 학교 이메일과 비밀번호를 다시 확인해 주세요.',
-        ),
-      )
+      setErrorMessage(getLoginErrorMessage(error))
     } finally {
       setLoading(false)
     }

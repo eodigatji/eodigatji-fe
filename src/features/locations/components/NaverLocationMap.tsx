@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   DEFAULT_MAP_CENTER,
   type Coordinates,
+  type LocationProximityTier,
 } from '../lib/locationCoordinates'
 import { loadNaverMaps } from '../lib/loadNaverMaps'
 
@@ -11,6 +12,8 @@ export type NaverLocationMarker = Coordinates & {
   detail?: string
   itemCount?: number
   number?: string
+  proximityTier?: LocationProximityTier
+  distanceMeters?: number
 }
 
 type NaverLocationMapProps = {
@@ -35,9 +38,17 @@ function escapeMarkerText(value: string) {
 function createMarkerHtml(marker: NaverLocationMarker, isActive: boolean) {
   const count = marker.itemCount ?? 0
   const label = escapeMarkerText(marker.name)
+  const proximityClass =
+    marker.proximityTier && marker.proximityTier !== 'default'
+      ? ` is-${marker.proximityTier}`
+      : ''
+  const distanceLabel =
+    typeof marker.distanceMeters === 'number'
+      ? ` (${Math.round(marker.distanceMeters)}m)`
+      : ''
 
   return `
-    <div class="location-map-marker${isActive ? ' is-active' : ''}" aria-label="${label}">
+    <div class="location-map-marker${proximityClass}${isActive ? ' is-active' : ''}" aria-label="${label}${distanceLabel}">
       <span class="location-map-marker-count">${count}</span>
     </div>
   `

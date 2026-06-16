@@ -1,18 +1,21 @@
 import {
   BadgeHelp,
+  Bell,
   MapPinned,
-  Plus,
   Search,
   ShieldCheck,
   UserRound,
+  type LucideIcon,
 } from 'lucide-react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../../features/auth/store/authStore'
+import { useNotificationStore } from '../../features/notifications/store/notificationStore'
 
 type NavigationItem = {
-  to: string
+  badgeCount?: number
+  icon: LucideIcon
   label: string
-  icon: typeof MapPinned
+  to: string
 }
 
 function isLocationDetailPath(pathname: string) {
@@ -53,6 +56,10 @@ function isNavigationItemActive(pathname: string, itemTo: string) {
     )
   }
 
+  if (itemTo === '/notifications') {
+    return pathname === '/notifications'
+  }
+
   if (itemTo === '/mypage') {
     return pathname === '/mypage'
   }
@@ -81,6 +88,10 @@ function getHeaderTitle(pathname: string) {
     return '보관 장소'
   }
 
+  if (pathname === '/notifications') {
+    return '알림'
+  }
+
   if (pathname === '/mypage') {
     return '내 정보'
   }
@@ -92,8 +103,19 @@ function getHeaderTitle(pathname: string) {
   return '어디갔지'
 }
 
+function formatBadgeCount(count: number) {
+  if (count > 9) {
+    return '9+'
+  }
+
+  return String(count)
+}
+
 function MainLayout() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const unreadCount = useNotificationStore(
+    (state) => state.items.filter((item) => !item.isRead).length,
+  )
   const { pathname } = useLocation()
 
   const primaryNavigation: NavigationItem[] = isAuthenticated
@@ -101,6 +123,12 @@ function MainLayout() {
         { to: '/', label: '홈', icon: MapPinned },
         { to: '/locations', label: '장소', icon: MapPinned },
         { to: '/posts', label: '찾기', icon: Search },
+        {
+          to: '/notifications',
+          label: '알림',
+          icon: Bell,
+          badgeCount: unreadCount,
+        },
         { to: '/mypage', label: '내정보', icon: UserRound },
       ]
     : [
@@ -126,20 +154,33 @@ function MainLayout() {
                 <MapPinned className="h-3.5 w-3.5" />
                 EODIGATJI
               </NavLink>
-              <p className="mt-1 truncate text-[18px] font-semibold">{headerTitle}</p>
+              <p className="mt-1 truncate text-[18px] font-semibold">
+                {headerTitle}
+              </p>
             </div>
 
-            <NavLink
-              to={isAuthenticated ? '/posts/new' : '/auth/login'}
-              className="mobile-topbar-button inline-flex shrink-0 items-center gap-2 rounded-full bg-(color:--accent-strong) px-3.5 py-2.5 text-[13px] font-semibold text-[color:#fff] shadow-(--shadow-accent)"
-            >
-              {isAuthenticated ? (
-                <Plus className="h-4 w-4" />
-              ) : (
+            {isAuthenticated ? (
+              <NavLink
+                to="/notifications"
+                className="relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-(--border-subtle) bg-white"
+                aria-label="알림 보기"
+              >
+                <Bell className="h-4.5 w-4.5" />
+                {unreadCount ? (
+                  <span className="absolute -top-1 -right-0.5 rounded-full bg-(--accent-strong) px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                    {formatBadgeCount(unreadCount)}
+                  </span>
+                ) : null}
+              </NavLink>
+            ) : (
+              <NavLink
+                to="/auth/login"
+                className="mobile-topbar-button inline-flex shrink-0 items-center gap-2 rounded-full bg-(color:--accent-strong) px-3.5 py-2.5 text-[13px] font-semibold text-[color:#fff] shadow-(--shadow-accent)"
+              >
                 <ShieldCheck className="h-4 w-4" />
-              )}
-              <span>{isAuthenticated ? '글 등록' : '로그인'}</span>
-            </NavLink>
+                <span>로그인</span>
+              </NavLink>
+            )}
           </div>
         </header>
 
@@ -147,12 +188,8 @@ function MainLayout() {
           <Outlet />
         </main>
 
-        <nav className="mobile-frame-bottom-nav fixed bottom-0 z-30 border-t border-(color:--border-subtle) bg-white/92 backdrop-blur">
-          <div
-            className={`grid gap-1 px-1.5 py-1.5 ${
-              isAuthenticated ? 'grid-cols-4' : 'grid-cols-5'
-            }`}
-          >
+        <nav className="mobile-frame-bottom-nav fixed bottom-0 z-30 border-t border-(color:--border-subtle) bg-white shadow-[0_-10px_30px_-24px_rgba(19,34,56,0.35)]">
+          <div className="grid grid-cols-5 gap-1 px-1.5 py-1.5">
             {primaryNavigation.map((item) => {
               const Icon = item.icon
               const isActive = isNavigationItemActive(pathname, item.to)
@@ -170,7 +207,14 @@ function MainLayout() {
                     ].join(' ')
                   }
                 >
-                  <Icon className="h-[17px] w-[17px]" />
+                  <span className="relative">
+                    <Icon className="h-[17px] w-[17px]" />
+                    {item.badgeCount ? (
+                      <span className="absolute -top-1.5 -right-2 rounded-full bg-(--accent-strong) px-1 py-0.5 text-[9px] font-semibold leading-none text-white">
+                        {formatBadgeCount(item.badgeCount)}
+                      </span>
+                    ) : null}
+                  </span>
                   <span>{item.label}</span>
                 </NavLink>
               )
